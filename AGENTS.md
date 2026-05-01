@@ -317,15 +317,15 @@ D:\VibeCading\.conda\VibeCading\python.exe
 验证 JSON：
 
 ```powershell
-D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py validate .\examples\mounting_plate.json
-D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py validate .\examples\l_bracket.json
+D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py validate .\examples\basic\mounting_plate.json
+D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py validate .\examples\basic\l_bracket.json
 ```
 
 运行预览后端：
 
 ```powershell
-D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\mounting_plate.json --backend preview
-D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\l_bracket.json --backend preview
+D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\basic\mounting_plate.json --backend preview
+D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\basic\l_bracket.json --backend preview
 ```
 
 检查 SolidWorks：
@@ -337,8 +337,8 @@ D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py sw-check
 运行 SolidWorks 后端：
 
 ```powershell
-D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\mounting_plate.json --backend solidworks
-D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\l_bracket.json --backend solidworks
+D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\basic\mounting_plate.json --backend solidworks
+D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\basic\l_bracket.json --backend solidworks
 ```
 
 运行测试：

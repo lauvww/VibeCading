@@ -115,19 +115,19 @@ D:\VibeCading\.conda\VibeCading\python.exe
 Validate a job:
 
 ```powershell
-D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py validate .\examples\face_reference_test_part.json
+D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py validate .\examples\primitives\face_reference_test_part.json
 ```
 
 Run preview:
 
 ```powershell
-D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\face_reference_test_part.json --backend preview
+D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\primitives\face_reference_test_part.json --backend preview
 ```
 
 Run SolidWorks:
 
 ```powershell
-D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\face_reference_test_part.json --backend solidworks
+D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\primitives\face_reference_test_part.json --backend solidworks
 ```
 
 Run tests:

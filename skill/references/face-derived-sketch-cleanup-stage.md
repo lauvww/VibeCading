@@ -59,7 +59,7 @@ Do not add a new SolidWorks function for each of these product words. Emit reusa
 
 ## Example Pattern
 
-The SolidWorks-tested example is `examples/中文开口槽工作流测试.json`.
+The SolidWorks-tested example is `examples/sketch/中文开口槽工作流测试.json`.
 
 It performs:
 
@@ -107,9 +107,9 @@ Before reporting this workflow as complete:
 Recommended commands:
 
 ```powershell
-D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py validate .\examples\中文开口槽工作流测试.json
-D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\中文开口槽工作流测试.json --backend preview
-D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\中文开口槽工作流测试.json --backend solidworks
+D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py validate .\examples\sketch\中文开口槽工作流测试.json
+D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\sketch\中文开口槽工作流测试.json --backend preview
+D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\sketch\中文开口槽工作流测试.json --backend solidworks
 D:\VibeCading\.conda\VibeCading\python.exe -m unittest discover .\mcp-server\tests
 ```
 

@@ -67,22 +67,22 @@ Upper templates such as `mounting_plate` and `l_bracket` are examples. They shou
 
 Use these examples as regression references:
 
-- `examples/primitive_l_bracket.json`: direct primitive L bracket.
-- `examples/multi_feature_test_part.json`: multiple additive features from separate sketches.
-- `examples/multi_feature_cut_test_part.json`: additive features plus independent `cut_extrude` holes.
-- `examples/complex_fixture_plate.json`: complex fixture plate with 56 primitive operations, 4 extrudes, 2 cuts, 6 holes, and 2 rectangular slots.
-- `examples/face_reference_test_part.json`: generated-face workflow; build base, select base top face by feature id and area, build boss, tag the boss top face, then cut a hole from that named face.
-- `examples/中文命名偏置基准面测试.json`: Chinese naming and offset-plane workflow; build a base, tag its top face, create a named offset reference plane, sketch on that plane, then cut a hole.
-- `examples/中文旋转轴测试.json`: revolve workflow; build a fully constrained half-section profile, use one profile segment as the rotational axis, then create a 360 degree revolved body.
-- `examples/中文旋转切除测试.json`: cut-revolve workflow; create a revolved cylindrical body on the original front datum, then create a fully constrained revolve-cut section on the same datum and cut a center bore.
-- `examples/中文扫描把手测试.json`: sweep workflow; create and finish a constrained path sketch, create a constrained circular profile sketch, then sweep the profile along the path.
-- `examples/中文圆弧扫描切除测试.json`: arc path plus `cut_sweep`; create an outer swept tube, then sweep-cut the inner bore along a matching arc path.
-- `examples/中文扭转扫描测试.json`: constant-twist sweep; create a constrained rectangular profile and sweep it with a 90 degree twist.
-- `examples/中文导向线变截面扫描测试.json`: guide-curve / variable-section sweep. The profile sketch explicitly pierces the path and guide curve, and the SolidWorks run generates SLDPRT, STEP, SVG, PDF, and a complete summary.
-- `examples/中文放样过渡管测试.json`: additive loft; creates offset datum planes from the original front plane, builds three fully constrained circular profile sketches, then lofts them into a transition body.
-- `examples/中文放样切除测试.json`: cut loft; creates a base block, builds three fully constrained circular cut profiles through the body, then creates a tapered internal passage with `cut_loft`.
-- `examples/中文草图优化测试.json`: sketch-level optimization; creates sketch fillets, a chamfered cut profile, mirrored holes, and linearly patterned circular sketch geometry before creating the 3D features.
-- `examples/中文转换实体等距切槽测试.json`: convert/project a generated top-face outer loop, offset it inward, fully define the derived groove sketch, and cut a shallow perimeter groove.
+- `examples/basic/primitive_l_bracket.json`: direct primitive L bracket.
+- `examples/primitives/multi_feature_test_part.json`: multiple additive features from separate sketches.
+- `examples/primitives/multi_feature_cut_test_part.json`: additive features plus independent `cut_extrude` holes.
+- `examples/primitives/complex_fixture_plate.json`: complex fixture plate with 56 primitive operations, 4 extrudes, 2 cuts, 6 holes, and 2 rectangular slots.
+- `examples/primitives/face_reference_test_part.json`: generated-face workflow; build base, select base top face by feature id and area, build boss, tag the boss top face, then cut a hole from that named face.
+- `examples/primitives/中文命名偏置基准面测试.json`: Chinese naming and offset-plane workflow; build a base, tag its top face, create a named offset reference plane, sketch on that plane, then cut a hole.
+- `examples/primitives/中文旋转轴测试.json`: revolve workflow; build a fully constrained half-section profile, use one profile segment as the rotational axis, then create a 360 degree revolved body.
+- `examples/primitives/中文旋转切除测试.json`: cut-revolve workflow; create a revolved cylindrical body on the original front datum, then create a fully constrained revolve-cut section on the same datum and cut a center bore.
+- `examples/advanced/中文扫描把手测试.json`: sweep workflow; create and finish a constrained path sketch, create a constrained circular profile sketch, then sweep the profile along the path.
+- `examples/advanced/中文圆弧扫描切除测试.json`: arc path plus `cut_sweep`; create an outer swept tube, then sweep-cut the inner bore along a matching arc path.
+- `examples/advanced/中文扭转扫描测试.json`: constant-twist sweep; create a constrained rectangular profile and sweep it with a 90 degree twist.
+- `examples/advanced/中文导向线变截面扫描测试.json`: guide-curve / variable-section sweep. The profile sketch explicitly pierces the path and guide curve, and the SolidWorks run generates SLDPRT, STEP, SVG, PDF, and a complete summary.
+- `examples/advanced/中文放样过渡管测试.json`: additive loft; creates offset datum planes from the original front plane, builds three fully constrained circular profile sketches, then lofts them into a transition body.
+- `examples/advanced/中文放样切除测试.json`: cut loft; creates a base block, builds three fully constrained circular cut profiles through the body, then creates a tapered internal passage with `cut_loft`.
+- `examples/sketch/中文草图优化测试.json`: sketch-level optimization; creates sketch fillets, a chamfered cut profile, mirrored holes, and linearly patterned circular sketch geometry before creating the 3D features.
+- `examples/sketch/中文转换实体等距切槽测试.json`: convert/project a generated top-face outer loop, offset it inward, fully define the derived groove sketch, and cut a shallow perimeter groove.
 
 All of these should validate. The SolidWorks-tested examples generated SLDPRT, STEP, SVG, PDF, and a complete summary when SolidWorks was available.
 

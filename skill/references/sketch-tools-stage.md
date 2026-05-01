@@ -195,7 +195,7 @@ Use this pattern when a user asks for an open slot, edge notch, U-shaped cut, or
 5. Run `validate_fully_constrained`.
 6. Run `cut_extrude`.
 
-The SolidWorks-tested example is `examples/中文开口槽工作流测试.json`. It proves that a face-derived reference workflow can be used during sketch construction, then cleaned before the final feature-driving rectangle is cut from the plate edge.
+The SolidWorks-tested example is `examples/sketch/中文开口槽工作流测试.json`. It proves that a face-derived reference workflow can be used during sketch construction, then cleaned before the final feature-driving rectangle is cut from the plate edge.
 
 ## SolidWorks Lessons
 
@@ -214,12 +214,12 @@ The SolidWorks-tested example is `examples/中文开口槽工作流测试.json`.
 
 ## Verified Examples
 
-- `examples/中文草图优化测试.json`: sketch fillet, sketch chamfer, mirrored holes, and linear circular sketch pattern.
-- `examples/中文槽口多边形样条测试.json`: straight slot, polygon, spline fit-point references, fit-point dimensions, and `fully_define_sketch`.
-- `examples/中文转换实体等距切槽测试.json`: projected face loop, inward offset, full-definition check, and shallow groove cut.
-- `examples/中文草图剪裁测试.json`: projected face loop, overhanging line, and `trim_entities` entity-point trim using an explicit trim point.
-- `examples/中文草图复杂剪裁测试.json`: boundary-based inside trim, outside trim, explicit `delete_entities`, and power trim with entity-point fallback, all verified through SolidWorks export.
-- `examples/中文开口槽工作流测试.json`: generated top-face sketch, converted outer loop, inward offset reference, trim/delete cleanup, final dimensioned open-slot cut, and fully constrained sketches verified through SolidWorks export.
+- `examples/sketch/中文草图优化测试.json`: sketch fillet, sketch chamfer, mirrored holes, and linear circular sketch pattern.
+- `examples/sketch/中文槽口多边形样条测试.json`: straight slot, polygon, spline fit-point references, fit-point dimensions, and `fully_define_sketch`.
+- `examples/sketch/中文转换实体等距切槽测试.json`: projected face loop, inward offset, full-definition check, and shallow groove cut.
+- `examples/sketch/中文草图剪裁测试.json`: projected face loop, overhanging line, and `trim_entities` entity-point trim using an explicit trim point.
+- `examples/sketch/中文草图复杂剪裁测试.json`: boundary-based inside trim, outside trim, explicit `delete_entities`, and power trim with entity-point fallback, all verified through SolidWorks export.
+- `examples/sketch/中文开口槽工作流测试.json`: generated top-face sketch, converted outer loop, inward offset reference, trim/delete cleanup, final dimensioned open-slot cut, and fully constrained sketches verified through SolidWorks export.
 
 ## Current Limits
 

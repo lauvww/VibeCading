@@ -18,7 +18,7 @@ from core.validators import validate_job
 
 class PrimitivePartTests(unittest.TestCase):
     def test_multi_feature_example_passes_validation(self) -> None:
-        data = json.loads((PROJECT_ROOT / "examples" / "multi_feature_test_part.json").read_text(encoding="utf-8"))
+        data = json.loads((PROJECT_ROOT / "examples" / "primitives" / "multi_feature_test_part.json").read_text(encoding="utf-8"))
         job = CadJob.from_dict(data)
         validate_job(job)
         self.assertEqual(job.kind, "primitive_part")
@@ -31,7 +31,7 @@ class PrimitivePartTests(unittest.TestCase):
         shutil.rmtree(output_root, ignore_errors=True)
         output_root.mkdir(parents=True, exist_ok=True)
         try:
-            data = json.loads((PROJECT_ROOT / "examples" / "multi_feature_test_part.json").read_text(encoding="utf-8"))
+            data = json.loads((PROJECT_ROOT / "examples" / "primitives" / "multi_feature_test_part.json").read_text(encoding="utf-8"))
             job = CadJob.from_dict(data)
             summary = run_job(job, output_root=output_root, backend="preview")
             self.assertTrue(summary["ok"])
@@ -44,7 +44,7 @@ class PrimitivePartTests(unittest.TestCase):
             shutil.rmtree(output_root, ignore_errors=True)
 
     def test_cut_extrude_example_passes_validation(self) -> None:
-        data = json.loads((PROJECT_ROOT / "examples" / "multi_feature_cut_test_part.json").read_text(encoding="utf-8"))
+        data = json.loads((PROJECT_ROOT / "examples" / "primitives" / "multi_feature_cut_test_part.json").read_text(encoding="utf-8"))
         job = CadJob.from_dict(data)
         validate_job(job)
         operation_types = [operation.type for operation in job.part.operations]
@@ -57,7 +57,7 @@ class PrimitivePartTests(unittest.TestCase):
         shutil.rmtree(output_root, ignore_errors=True)
         output_root.mkdir(parents=True, exist_ok=True)
         try:
-            data = json.loads((PROJECT_ROOT / "examples" / "multi_feature_cut_test_part.json").read_text(encoding="utf-8"))
+            data = json.loads((PROJECT_ROOT / "examples" / "primitives" / "multi_feature_cut_test_part.json").read_text(encoding="utf-8"))
             job = CadJob.from_dict(data)
             summary = run_job(job, output_root=output_root, backend="preview")
             self.assertTrue(summary["ok"])
@@ -71,7 +71,7 @@ class PrimitivePartTests(unittest.TestCase):
             shutil.rmtree(output_root, ignore_errors=True)
 
     def test_complex_fixture_example_passes_validation(self) -> None:
-        data = json.loads((PROJECT_ROOT / "examples" / "complex_fixture_plate.json").read_text(encoding="utf-8"))
+        data = json.loads((PROJECT_ROOT / "examples" / "primitives" / "complex_fixture_plate.json").read_text(encoding="utf-8"))
         job = CadJob.from_dict(data)
         validate_job(job)
         operation_types = [operation.type for operation in job.part.operations]
@@ -84,7 +84,7 @@ class PrimitivePartTests(unittest.TestCase):
         shutil.rmtree(output_root, ignore_errors=True)
         output_root.mkdir(parents=True, exist_ok=True)
         try:
-            data = json.loads((PROJECT_ROOT / "examples" / "complex_fixture_plate.json").read_text(encoding="utf-8"))
+            data = json.loads((PROJECT_ROOT / "examples" / "primitives" / "complex_fixture_plate.json").read_text(encoding="utf-8"))
             job = CadJob.from_dict(data)
             summary = run_job(job, output_root=output_root, backend="preview")
             self.assertTrue(summary["ok"])
@@ -98,7 +98,7 @@ class PrimitivePartTests(unittest.TestCase):
             shutil.rmtree(output_root, ignore_errors=True)
 
     def test_face_reference_example_passes_validation(self) -> None:
-        data = json.loads((PROJECT_ROOT / "examples" / "face_reference_test_part.json").read_text(encoding="utf-8"))
+        data = json.loads((PROJECT_ROOT / "examples" / "primitives" / "face_reference_test_part.json").read_text(encoding="utf-8"))
         job = CadJob.from_dict(data)
         validate_job(job)
         operation_types = [operation.type for operation in job.part.operations]
@@ -119,7 +119,7 @@ class PrimitivePartTests(unittest.TestCase):
         shutil.rmtree(output_root, ignore_errors=True)
         output_root.mkdir(parents=True, exist_ok=True)
         try:
-            data = json.loads((PROJECT_ROOT / "examples" / "face_reference_test_part.json").read_text(encoding="utf-8"))
+            data = json.loads((PROJECT_ROOT / "examples" / "primitives" / "face_reference_test_part.json").read_text(encoding="utf-8"))
             job = CadJob.from_dict(data)
             summary = run_job(job, output_root=output_root, backend="preview")
             self.assertTrue(summary["ok"])
@@ -134,7 +134,7 @@ class PrimitivePartTests(unittest.TestCase):
             shutil.rmtree(output_root, ignore_errors=True)
 
     def test_chinese_offset_plane_example_passes_validation(self) -> None:
-        data = json.loads((PROJECT_ROOT / "examples" / "中文命名偏置基准面测试.json").read_text(encoding="utf-8"))
+        data = json.loads((PROJECT_ROOT / "examples" / "primitives" / "中文命名偏置基准面测试.json").read_text(encoding="utf-8"))
         job = CadJob.from_dict(data)
         validate_job(job)
         self.assertEqual(job.job_id, "中文命名-偏置基准面测试-001")
@@ -151,7 +151,7 @@ class PrimitivePartTests(unittest.TestCase):
         shutil.rmtree(output_root, ignore_errors=True)
         output_root.mkdir(parents=True, exist_ok=True)
         try:
-            data = json.loads((PROJECT_ROOT / "examples" / "中文命名偏置基准面测试.json").read_text(encoding="utf-8"))
+            data = json.loads((PROJECT_ROOT / "examples" / "primitives" / "中文命名偏置基准面测试.json").read_text(encoding="utf-8"))
             job = CadJob.from_dict(data)
             summary = run_job(job, output_root=output_root, backend="preview")
             self.assertTrue(summary["ok"])
@@ -169,7 +169,7 @@ class PrimitivePartTests(unittest.TestCase):
             shutil.rmtree(output_root, ignore_errors=True)
 
     def test_revolve_example_passes_validation(self) -> None:
-        data = json.loads((PROJECT_ROOT / "examples" / "中文旋转轴测试.json").read_text(encoding="utf-8"))
+        data = json.loads((PROJECT_ROOT / "examples" / "primitives" / "中文旋转轴测试.json").read_text(encoding="utf-8"))
         job = CadJob.from_dict(data)
         validate_job(job)
         self.assertEqual(job.job_id, "中文旋转轴测试-001")
@@ -183,7 +183,7 @@ class PrimitivePartTests(unittest.TestCase):
         shutil.rmtree(output_root, ignore_errors=True)
         output_root.mkdir(parents=True, exist_ok=True)
         try:
-            data = json.loads((PROJECT_ROOT / "examples" / "中文旋转轴测试.json").read_text(encoding="utf-8"))
+            data = json.loads((PROJECT_ROOT / "examples" / "primitives" / "中文旋转轴测试.json").read_text(encoding="utf-8"))
             job = CadJob.from_dict(data)
             summary = run_job(job, output_root=output_root, backend="preview")
             self.assertTrue(summary["ok"])
@@ -199,7 +199,7 @@ class PrimitivePartTests(unittest.TestCase):
             shutil.rmtree(output_root, ignore_errors=True)
 
     def test_cut_revolve_example_passes_validation(self) -> None:
-        data = json.loads((PROJECT_ROOT / "examples" / "中文旋转切除测试.json").read_text(encoding="utf-8"))
+        data = json.loads((PROJECT_ROOT / "examples" / "primitives" / "中文旋转切除测试.json").read_text(encoding="utf-8"))
         job = CadJob.from_dict(data)
         validate_job(job)
         self.assertEqual(job.job_id, "中文旋转切除测试-001")
@@ -216,7 +216,7 @@ class PrimitivePartTests(unittest.TestCase):
         shutil.rmtree(output_root, ignore_errors=True)
         output_root.mkdir(parents=True, exist_ok=True)
         try:
-            data = json.loads((PROJECT_ROOT / "examples" / "中文旋转切除测试.json").read_text(encoding="utf-8"))
+            data = json.loads((PROJECT_ROOT / "examples" / "primitives" / "中文旋转切除测试.json").read_text(encoding="utf-8"))
             job = CadJob.from_dict(data)
             summary = run_job(job, output_root=output_root, backend="preview")
             self.assertTrue(summary["ok"])
@@ -232,7 +232,7 @@ class PrimitivePartTests(unittest.TestCase):
             shutil.rmtree(output_root, ignore_errors=True)
 
     def test_sweep_example_passes_validation(self) -> None:
-        data = json.loads((PROJECT_ROOT / "examples" / "中文扫描把手测试.json").read_text(encoding="utf-8"))
+        data = json.loads((PROJECT_ROOT / "examples" / "advanced" / "中文扫描把手测试.json").read_text(encoding="utf-8"))
         job = CadJob.from_dict(data)
         validate_job(job)
         self.assertEqual(job.job_id, "中文扫描把手测试-001")
@@ -248,7 +248,7 @@ class PrimitivePartTests(unittest.TestCase):
         shutil.rmtree(output_root, ignore_errors=True)
         output_root.mkdir(parents=True, exist_ok=True)
         try:
-            data = json.loads((PROJECT_ROOT / "examples" / "中文扫描把手测试.json").read_text(encoding="utf-8"))
+            data = json.loads((PROJECT_ROOT / "examples" / "advanced" / "中文扫描把手测试.json").read_text(encoding="utf-8"))
             job = CadJob.from_dict(data)
             summary = run_job(job, output_root=output_root, backend="preview")
             self.assertTrue(summary["ok"])
@@ -265,7 +265,7 @@ class PrimitivePartTests(unittest.TestCase):
             shutil.rmtree(output_root, ignore_errors=True)
 
     def test_arc_cut_sweep_example_passes_validation(self) -> None:
-        data = json.loads((PROJECT_ROOT / "examples" / "中文圆弧扫描切除测试.json").read_text(encoding="utf-8"))
+        data = json.loads((PROJECT_ROOT / "examples" / "advanced" / "中文圆弧扫描切除测试.json").read_text(encoding="utf-8"))
         job = CadJob.from_dict(data)
         validate_job(job)
         operation_types = [operation.type for operation in job.part.operations]
@@ -279,7 +279,7 @@ class PrimitivePartTests(unittest.TestCase):
         shutil.rmtree(output_root, ignore_errors=True)
         output_root.mkdir(parents=True, exist_ok=True)
         try:
-            data = json.loads((PROJECT_ROOT / "examples" / "中文圆弧扫描切除测试.json").read_text(encoding="utf-8"))
+            data = json.loads((PROJECT_ROOT / "examples" / "advanced" / "中文圆弧扫描切除测试.json").read_text(encoding="utf-8"))
             job = CadJob.from_dict(data)
             summary = run_job(job, output_root=output_root, backend="preview")
             self.assertTrue(summary["ok"])
@@ -295,7 +295,7 @@ class PrimitivePartTests(unittest.TestCase):
             shutil.rmtree(output_root, ignore_errors=True)
 
     def test_twist_sweep_example_passes_validation(self) -> None:
-        data = json.loads((PROJECT_ROOT / "examples" / "中文扭转扫描测试.json").read_text(encoding="utf-8"))
+        data = json.loads((PROJECT_ROOT / "examples" / "advanced" / "中文扭转扫描测试.json").read_text(encoding="utf-8"))
         job = CadJob.from_dict(data)
         validate_job(job)
         operation = job.part.operations[-1]
@@ -304,7 +304,7 @@ class PrimitivePartTests(unittest.TestCase):
         self.assertEqual(operation.parameters["twist_angle"], 90)
 
     def test_guide_variable_sweep_example_passes_validation(self) -> None:
-        data = json.loads((PROJECT_ROOT / "examples" / "中文导向线变截面扫描测试.json").read_text(encoding="utf-8"))
+        data = json.loads((PROJECT_ROOT / "examples" / "advanced" / "中文导向线变截面扫描测试.json").read_text(encoding="utf-8"))
         job = CadJob.from_dict(data)
         validate_job(job)
         operation = job.part.operations[-1]
@@ -318,7 +318,7 @@ class PrimitivePartTests(unittest.TestCase):
         )
 
     def test_loft_example_passes_validation(self) -> None:
-        data = json.loads((PROJECT_ROOT / "examples" / "中文放样过渡管测试.json").read_text(encoding="utf-8"))
+        data = json.loads((PROJECT_ROOT / "examples" / "advanced" / "中文放样过渡管测试.json").read_text(encoding="utf-8"))
         job = CadJob.from_dict(data)
         validate_job(job)
         self.assertEqual(job.job_id, "中文放样过渡管测试-001")
@@ -338,7 +338,7 @@ class PrimitivePartTests(unittest.TestCase):
         shutil.rmtree(output_root, ignore_errors=True)
         output_root.mkdir(parents=True, exist_ok=True)
         try:
-            data = json.loads((PROJECT_ROOT / "examples" / "中文放样过渡管测试.json").read_text(encoding="utf-8"))
+            data = json.loads((PROJECT_ROOT / "examples" / "advanced" / "中文放样过渡管测试.json").read_text(encoding="utf-8"))
             job = CadJob.from_dict(data)
             summary = run_job(job, output_root=output_root, backend="preview")
             self.assertTrue(summary["ok"])
@@ -355,7 +355,7 @@ class PrimitivePartTests(unittest.TestCase):
             shutil.rmtree(output_root, ignore_errors=True)
 
     def test_cut_loft_example_passes_validation(self) -> None:
-        data = json.loads((PROJECT_ROOT / "examples" / "中文放样切除测试.json").read_text(encoding="utf-8"))
+        data = json.loads((PROJECT_ROOT / "examples" / "advanced" / "中文放样切除测试.json").read_text(encoding="utf-8"))
         job = CadJob.from_dict(data)
         validate_job(job)
         self.assertEqual(job.job_id, "中文放样切除测试-001")
@@ -376,7 +376,7 @@ class PrimitivePartTests(unittest.TestCase):
         shutil.rmtree(output_root, ignore_errors=True)
         output_root.mkdir(parents=True, exist_ok=True)
         try:
-            data = json.loads((PROJECT_ROOT / "examples" / "中文放样切除测试.json").read_text(encoding="utf-8"))
+            data = json.loads((PROJECT_ROOT / "examples" / "advanced" / "中文放样切除测试.json").read_text(encoding="utf-8"))
             job = CadJob.from_dict(data)
             summary = run_job(job, output_root=output_root, backend="preview")
             self.assertTrue(summary["ok"])
@@ -393,7 +393,7 @@ class PrimitivePartTests(unittest.TestCase):
             shutil.rmtree(output_root, ignore_errors=True)
 
     def test_sketch_optimized_example_passes_validation(self) -> None:
-        data = json.loads((PROJECT_ROOT / "examples" / "中文草图优化测试.json").read_text(encoding="utf-8"))
+        data = json.loads((PROJECT_ROOT / "examples" / "sketch" / "中文草图优化测试.json").read_text(encoding="utf-8"))
         job = CadJob.from_dict(data)
         validate_job(job)
         self.assertEqual(job.job_id, "中文草图优化测试-001")
@@ -413,7 +413,7 @@ class PrimitivePartTests(unittest.TestCase):
         shutil.rmtree(output_root, ignore_errors=True)
         output_root.mkdir(parents=True, exist_ok=True)
         try:
-            data = json.loads((PROJECT_ROOT / "examples" / "中文草图优化测试.json").read_text(encoding="utf-8"))
+            data = json.loads((PROJECT_ROOT / "examples" / "sketch" / "中文草图优化测试.json").read_text(encoding="utf-8"))
             job = CadJob.from_dict(data)
             summary = run_job(job, output_root=output_root, backend="preview")
             self.assertTrue(summary["ok"])
@@ -433,7 +433,7 @@ class PrimitivePartTests(unittest.TestCase):
             shutil.rmtree(output_root, ignore_errors=True)
 
     def test_slot_polygon_spline_example_passes_validation(self) -> None:
-        data = json.loads((PROJECT_ROOT / "examples" / "中文槽口多边形样条测试.json").read_text(encoding="utf-8"))
+        data = json.loads((PROJECT_ROOT / "examples" / "sketch" / "中文槽口多边形样条测试.json").read_text(encoding="utf-8"))
         job = CadJob.from_dict(data)
         validate_job(job)
         operation_types = [operation.type for operation in job.part.operations]
@@ -450,7 +450,7 @@ class PrimitivePartTests(unittest.TestCase):
         shutil.rmtree(output_root, ignore_errors=True)
         output_root.mkdir(parents=True, exist_ok=True)
         try:
-            data = json.loads((PROJECT_ROOT / "examples" / "中文槽口多边形样条测试.json").read_text(encoding="utf-8"))
+            data = json.loads((PROJECT_ROOT / "examples" / "sketch" / "中文槽口多边形样条测试.json").read_text(encoding="utf-8"))
             job = CadJob.from_dict(data)
             summary = run_job(job, output_root=output_root, backend="preview")
             self.assertTrue(summary["ok"])
@@ -466,7 +466,7 @@ class PrimitivePartTests(unittest.TestCase):
             shutil.rmtree(output_root, ignore_errors=True)
 
     def test_convert_offset_groove_example_passes_validation(self) -> None:
-        data = json.loads((PROJECT_ROOT / "examples" / "中文转换实体等距切槽测试.json").read_text(encoding="utf-8"))
+        data = json.loads((PROJECT_ROOT / "examples" / "sketch" / "中文转换实体等距切槽测试.json").read_text(encoding="utf-8"))
         job = CadJob.from_dict(data)
         validate_job(job)
         operation_types = [operation.type for operation in job.part.operations]
@@ -481,7 +481,7 @@ class PrimitivePartTests(unittest.TestCase):
         shutil.rmtree(output_root, ignore_errors=True)
         output_root.mkdir(parents=True, exist_ok=True)
         try:
-            data = json.loads((PROJECT_ROOT / "examples" / "中文转换实体等距切槽测试.json").read_text(encoding="utf-8"))
+            data = json.loads((PROJECT_ROOT / "examples" / "sketch" / "中文转换实体等距切槽测试.json").read_text(encoding="utf-8"))
             job = CadJob.from_dict(data)
             summary = run_job(job, output_root=output_root, backend="preview")
             self.assertTrue(summary["ok"])
@@ -499,7 +499,7 @@ class PrimitivePartTests(unittest.TestCase):
             shutil.rmtree(output_root, ignore_errors=True)
 
     def test_trim_entities_example_passes_validation(self) -> None:
-        data = json.loads((PROJECT_ROOT / "examples" / "中文草图剪裁测试.json").read_text(encoding="utf-8"))
+        data = json.loads((PROJECT_ROOT / "examples" / "sketch" / "中文草图剪裁测试.json").read_text(encoding="utf-8"))
         job = CadJob.from_dict(data)
         validate_job(job)
         operation_types = [operation.type for operation in job.part.operations]
@@ -513,7 +513,7 @@ class PrimitivePartTests(unittest.TestCase):
         shutil.rmtree(output_root, ignore_errors=True)
         output_root.mkdir(parents=True, exist_ok=True)
         try:
-            data = json.loads((PROJECT_ROOT / "examples" / "中文草图剪裁测试.json").read_text(encoding="utf-8"))
+            data = json.loads((PROJECT_ROOT / "examples" / "sketch" / "中文草图剪裁测试.json").read_text(encoding="utf-8"))
             job = CadJob.from_dict(data)
             summary = run_job(job, output_root=output_root, backend="preview")
             self.assertTrue(summary["ok"])
@@ -530,7 +530,7 @@ class PrimitivePartTests(unittest.TestCase):
             shutil.rmtree(output_root, ignore_errors=True)
 
     def test_complex_trim_entities_example_passes_validation(self) -> None:
-        data = json.loads((PROJECT_ROOT / "examples" / "中文草图复杂剪裁测试.json").read_text(encoding="utf-8"))
+        data = json.loads((PROJECT_ROOT / "examples" / "sketch" / "中文草图复杂剪裁测试.json").read_text(encoding="utf-8"))
         job = CadJob.from_dict(data)
         validate_job(job)
         operation_types = [operation.type for operation in job.part.operations]
@@ -550,7 +550,7 @@ class PrimitivePartTests(unittest.TestCase):
         shutil.rmtree(output_root, ignore_errors=True)
         output_root.mkdir(parents=True, exist_ok=True)
         try:
-            data = json.loads((PROJECT_ROOT / "examples" / "中文草图复杂剪裁测试.json").read_text(encoding="utf-8"))
+            data = json.loads((PROJECT_ROOT / "examples" / "sketch" / "中文草图复杂剪裁测试.json").read_text(encoding="utf-8"))
             job = CadJob.from_dict(data)
             summary = run_job(job, output_root=output_root, backend="preview")
             self.assertTrue(summary["ok"])
@@ -568,7 +568,7 @@ class PrimitivePartTests(unittest.TestCase):
             shutil.rmtree(output_root, ignore_errors=True)
 
     def test_open_slot_workflow_example_passes_validation(self) -> None:
-        data = json.loads((PROJECT_ROOT / "examples" / "中文开口槽工作流测试.json").read_text(encoding="utf-8"))
+        data = json.loads((PROJECT_ROOT / "examples" / "sketch" / "中文开口槽工作流测试.json").read_text(encoding="utf-8"))
         job = CadJob.from_dict(data)
         validate_job(job)
         operation_types = [operation.type for operation in job.part.operations]
@@ -584,7 +584,7 @@ class PrimitivePartTests(unittest.TestCase):
         shutil.rmtree(output_root, ignore_errors=True)
         output_root.mkdir(parents=True, exist_ok=True)
         try:
-            data = json.loads((PROJECT_ROOT / "examples" / "中文开口槽工作流测试.json").read_text(encoding="utf-8"))
+            data = json.loads((PROJECT_ROOT / "examples" / "sketch" / "中文开口槽工作流测试.json").read_text(encoding="utf-8"))
             job = CadJob.from_dict(data)
             summary = run_job(job, output_root=output_root, backend="preview")
             self.assertTrue(summary["ok"])

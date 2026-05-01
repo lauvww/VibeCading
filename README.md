@@ -31,7 +31,7 @@ The preview backend does not pretend to generate CAD geometry. If STEP is reques
 ## Run MVP-0
 
 ```powershell
-python .\mcp-server\server.py run .\examples\mounting_plate.json
+python .\mcp-server\server.py run .\examples\basic\mounting_plate.json
 ```
 
 Outputs are written under:
@@ -43,9 +43,9 @@ outputs/jobs/<job-id>/
 Run validation only:
 
 ```powershell
-python .\mcp-server\server.py validate .\examples\mounting_plate.json
-python .\mcp-server\server.py validate .\examples\l_bracket.json
-python .\mcp-server\server.py validate .\examples\primitive_l_bracket.json
+python .\mcp-server\server.py validate .\examples\basic\mounting_plate.json
+python .\mcp-server\server.py validate .\examples\basic\l_bracket.json
+python .\mcp-server\server.py validate .\examples\basic\primitive_l_bracket.json
 ```
 
 Run tests:
@@ -54,9 +54,28 @@ Run tests:
 python -m unittest discover .\mcp-server\tests
 ```
 
+## Example Layout
+
+Runnable JSON examples are grouped by modeling scope:
+
+```text
+examples/basic/       entry examples and upper templates
+examples/primitives/  direct primitive_part feature examples
+examples/advanced/    sweep, cut sweep, twist, guide curve, loft, cut loft
+examples/sketch/      sketch-level and face-derived cleanup workflows
+```
+
+Generated CAD files should stay under `outputs/jobs/`, not under `examples/`.
+
 ## SolidWorks Test
 
-This project uses a project-local conda environment for SolidWorks automation:
+This project can use a project-local conda environment for SolidWorks automation. Recreate it from `environment.yml` when `.conda/` is not present:
+
+```powershell
+conda env create -p D:\VibeCading\.conda\VibeCading -f environment.yml
+```
+
+Then activate it:
 
 ```powershell
 conda activate D:\VibeCading\.conda\VibeCading
@@ -71,7 +90,7 @@ python .\mcp-server\server.py sw-check
 Run the mounting plate job with SolidWorks:
 
 ```powershell
-python .\mcp-server\server.py run .\examples\mounting_plate.json --backend solidworks
+python .\mcp-server\server.py run .\examples\basic\mounting_plate.json --backend solidworks
 ```
 
 The SolidWorks backend creates a constrained source sketch before extrusion. The mounting plate sketch includes horizontal and vertical edge relations, a fixed origin reference point, overall length and width dimensions, center positioning dimensions, and per-hole diameter plus X/Y position dimensions. The run fails instead of silently exporting if SolidWorks reports the sketch is not fully constrained.
@@ -81,7 +100,7 @@ For production sketches, prefer driving dimensions and geometric relations over 
 Run the upper-level L-bracket template with SolidWorks:
 
 ```powershell
-python .\mcp-server\server.py run .\examples\l_bracket.json --backend solidworks
+python .\mcp-server\server.py run .\examples\basic\l_bracket.json --backend solidworks
 ```
 
 The L-bracket template compiles into primitive operations before SolidWorks runs it. The current primitive set is:
@@ -112,6 +131,8 @@ sketch_chamfer
 fully_define_sketch
 convert_entities
 offset_entities
+trim_entities
+delete_entities
 validate_fully_constrained
 extrude
 cut_extrude
@@ -172,7 +193,7 @@ Chinese job names, part names, operation ids, named faces, reference planes, and
 The SolidWorks-tested cut-revolve example is:
 
 ```powershell
-python .\mcp-server\server.py run .\examples\中文旋转切除测试.json --backend solidworks
+python .\mcp-server\server.py run .\examples\primitives\中文旋转切除测试.json --backend solidworks
 ```
 
 `sweep` creates path-driven additive geometry from two sketches: one fully constrained path sketch and one fully constrained profile sketch. Use `finish_sketch` after validating the path so the executor can later select both sketches for the sweep feature:
@@ -191,25 +212,25 @@ python .\mcp-server\server.py run .\examples\中文旋转切除测试.json --bac
 The sweep example is:
 
 ```powershell
-python .\mcp-server\server.py run .\examples\中文扫描把手测试.json --backend solidworks
+python .\mcp-server\server.py run .\examples\advanced\中文扫描把手测试.json --backend solidworks
 ```
 
 `add_arc` adds a constrained circular-arc path segment, and `cut_sweep` creates subtractive swept geometry from a profile and path. The SolidWorks-tested arc plus swept-cut example is:
 
 ```powershell
-python .\mcp-server\server.py run .\examples\中文圆弧扫描切除测试.json --backend solidworks
+python .\mcp-server\server.py run .\examples\advanced\中文圆弧扫描切除测试.json --backend solidworks
 ```
 
 `sweep` and `cut_sweep` also accept advanced parameters such as `guide_curves`, `twist_control`, `twist_angle`, `path_align`, and `section_control`. Constant-twist sweep is SolidWorks-tested:
 
 ```powershell
-python .\mcp-server\server.py run .\examples\中文扭转扫描测试.json --backend solidworks
+python .\mcp-server\server.py run .\examples\advanced\中文扭转扫描测试.json --backend solidworks
 ```
 
 Guide-curve / variable-section sweep is represented in the DSL and preview backend with:
 
 ```powershell
-python .\mcp-server\server.py run .\examples\中文导向线变截面扫描测试.json --backend solidworks
+python .\mcp-server\server.py run .\examples\advanced\中文导向线变截面扫描测试.json --backend solidworks
 ```
 
 That guide-curve example is SolidWorks-tested. The stable pattern is: create and finish the path sketch, create and finish the guide-curve sketch, then start the profile sketch and add explicit `pierce` relations from the profile center to the path and from a profile point to the guide curve.
@@ -233,7 +254,7 @@ That guide-curve example is SolidWorks-tested. The stable pattern is: create and
 The tested loft example is:
 
 ```powershell
-python .\mcp-server\server.py run .\examples\中文放样过渡管测试.json --backend solidworks
+python .\mcp-server\server.py run .\examples\advanced\中文放样过渡管测试.json --backend solidworks
 ```
 
 `cut_loft` creates subtractive multi-section geometry from ordered profile sketches. The current SolidWorks-tested path builds a base solid first, creates offset reference planes through the body, fully constrains one closed cut profile on each plane, closes all cut profile sketches, then calls `cut_loft`:
@@ -254,7 +275,7 @@ python .\mcp-server\server.py run .\examples\中文放样过渡管测试.json --
 The tested cut-loft example is:
 
 ```powershell
-python .\mcp-server\server.py run .\examples\中文放样切除测试.json --backend solidworks
+python .\mcp-server\server.py run .\examples\advanced\中文放样切除测试.json --backend solidworks
 ```
 
 Sketch-level optimization is now supported for common engineering workflows where the sketch should already contain finished repeated or treated geometry:
@@ -274,19 +295,19 @@ Sketch-level optimization is now supported for common engineering workflows wher
 The tested sketch optimization example is:
 
 ```powershell
-python .\mcp-server\server.py run .\examples\中文草图优化测试.json --backend solidworks
+python .\mcp-server\server.py run .\examples\sketch\中文草图优化测试.json --backend solidworks
 ```
 
 The tested convert-and-offset example is:
 
 ```powershell
-python .\mcp-server\server.py run .\examples\中文转换实体等距切槽测试.json --backend solidworks
+python .\mcp-server\server.py run .\examples\sketch\中文转换实体等距切槽测试.json --backend solidworks
 ```
 
 Run a primitive job directly:
 
 ```powershell
-python .\mcp-server\server.py run .\examples\primitive_l_bracket.json --backend solidworks
+python .\mcp-server\server.py run .\examples\basic\primitive_l_bracket.json --backend solidworks
 ```
 
 ## Backend Selection
@@ -300,6 +321,6 @@ python .\mcp-server\server.py run .\examples\primitive_l_bracket.json --backend 
 You can force the preview backend:
 
 ```powershell
-python .\mcp-server\server.py run .\examples\mounting_plate.json --backend preview
-python .\mcp-server\server.py run .\examples\l_bracket.json --backend preview
+python .\mcp-server\server.py run .\examples\basic\mounting_plate.json --backend preview
+python .\mcp-server\server.py run .\examples\basic\l_bracket.json --backend preview
 ```

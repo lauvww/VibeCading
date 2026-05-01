@@ -140,10 +140,10 @@ Important implementation details:
 
 Use these examples as regression references:
 
-- `examples/中文扫描把手测试.json`: basic additive sweep.
-- `examples/中文圆弧扫描切除测试.json`: line-arc-line path, outer sweep, inner `cut_sweep`.
-- `examples/中文扭转扫描测试.json`: 90 degree constant twist sweep.
-- `examples/中文导向线变截面扫描测试.json`: guide-curve / variable-section sweep with explicit `pierce` relations.
+- `examples/advanced/中文扫描把手测试.json`: basic additive sweep.
+- `examples/advanced/中文圆弧扫描切除测试.json`: line-arc-line path, outer sweep, inner `cut_sweep`.
+- `examples/advanced/中文扭转扫描测试.json`: 90 degree constant twist sweep.
+- `examples/advanced/中文导向线变截面扫描测试.json`: guide-curve / variable-section sweep with explicit `pierce` relations.
 
 The guide-curve example generated:
 
@@ -170,9 +170,9 @@ Before reporting success:
 Recommended commands:
 
 ```powershell
-D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py validate .\examples\中文导向线变截面扫描测试.json
-D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\中文导向线变截面扫描测试.json --backend preview
-D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\中文导向线变截面扫描测试.json --backend solidworks
+D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py validate .\examples\advanced\中文导向线变截面扫描测试.json
+D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\advanced\中文导向线变截面扫描测试.json --backend preview
+D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\advanced\中文导向线变截面扫描测试.json --backend solidworks
 D:\VibeCading\.conda\VibeCading\python.exe -m unittest discover .\mcp-server\tests
 ```
 

@@ -80,25 +80,25 @@ The central decision remains: do not let AI directly generate uncontrolled Solid
 
 ## Verified Examples
 
-- `examples/mounting_plate.json`: upper template mounting plate.
-- `examples/l_bracket.json`: upper template L bracket compiled to primitive operations.
-- `examples/multi_feature_test_part.json`: additive multi-feature primitive part.
-- `examples/multi_feature_cut_test_part.json`: additive features plus `cut_extrude`.
-- `examples/complex_fixture_plate.json`: larger fixture with multiple bosses, holes, and rectangular slots.
-- `examples/face_reference_test_part.json`: feature-id face selection, area selection, named face, and face-based cut.
-- `examples/中文命名偏置基准面测试.json`: Chinese naming, named face, offset reference plane, sketch on named plane, and cut.
-- `examples/中文旋转轴测试.json`: fully constrained revolve section and 360 degree revolved body.
-- `examples/中文旋转切除测试.json`: fully constrained cut-revolve section and 360 degree center bore cut from a revolved body.
-- `examples/中文扫描把手测试.json`: fully constrained path sketch plus circular profile sketch, then additive sweep.
-- `examples/中文圆弧扫描切除测试.json`: line-arc-line path, outer sweep, and inner `cut_sweep`.
-- `examples/中文扭转扫描测试.json`: 90 degree constant-twist rectangular sweep.
-- `examples/中文导向线变截面扫描测试.json`: guide-curve / variable-section sweep with explicit profile-path and profile-guide `pierce` relations; SolidWorks run generates SLDPRT, STEP, SVG, PDF, and complete summary.
-- `examples/中文放样过渡管测试.json`: ordered-profile loft from three fully constrained circular sections on datum/offset planes; SolidWorks run generates SLDPRT, STEP, SVG, PDF, and complete summary.
-- `examples/中文放样切除测试.json`: ordered-profile cut loft through a base block; SolidWorks run generates SLDPRT, STEP, SVG, PDF, and complete summary.
-- `examples/中文草图优化测试.json`: sketch fillet, sketch chamfer, mirrored circular holes, and linear circular sketch pattern; SolidWorks run generates SLDPRT, STEP, SVG, PDF, and complete summary.
-- `examples/中文槽口多边形样条测试.json`: straight slot, polygon, spline fit-point references and full-definition fallback; SolidWorks run generates SLDPRT, STEP, SVG, PDF, and complete summary.
-- `examples/中文转换实体等距切槽测试.json`: projected top-face loop, inward offset, full-definition check, and shallow groove cut; SolidWorks run generates SLDPRT, STEP, SVG, PDF, and complete summary.
-- `examples/中文开口槽工作流测试.json`: generated top-face sketch, converted and offset reference geometry, trim/delete cleanup, final fully constrained edge-slot cut, and complete SolidWorks SLDPRT/STEP/SVG/PDF output.
+- `examples/basic/mounting_plate.json`: upper template mounting plate.
+- `examples/basic/l_bracket.json`: upper template L bracket compiled to primitive operations.
+- `examples/primitives/multi_feature_test_part.json`: additive multi-feature primitive part.
+- `examples/primitives/multi_feature_cut_test_part.json`: additive features plus `cut_extrude`.
+- `examples/primitives/complex_fixture_plate.json`: larger fixture with multiple bosses, holes, and rectangular slots.
+- `examples/primitives/face_reference_test_part.json`: feature-id face selection, area selection, named face, and face-based cut.
+- `examples/primitives/中文命名偏置基准面测试.json`: Chinese naming, named face, offset reference plane, sketch on named plane, and cut.
+- `examples/primitives/中文旋转轴测试.json`: fully constrained revolve section and 360 degree revolved body.
+- `examples/primitives/中文旋转切除测试.json`: fully constrained cut-revolve section and 360 degree center bore cut from a revolved body.
+- `examples/advanced/中文扫描把手测试.json`: fully constrained path sketch plus circular profile sketch, then additive sweep.
+- `examples/advanced/中文圆弧扫描切除测试.json`: line-arc-line path, outer sweep, and inner `cut_sweep`.
+- `examples/advanced/中文扭转扫描测试.json`: 90 degree constant-twist rectangular sweep.
+- `examples/advanced/中文导向线变截面扫描测试.json`: guide-curve / variable-section sweep with explicit profile-path and profile-guide `pierce` relations; SolidWorks run generates SLDPRT, STEP, SVG, PDF, and complete summary.
+- `examples/advanced/中文放样过渡管测试.json`: ordered-profile loft from three fully constrained circular sections on datum/offset planes; SolidWorks run generates SLDPRT, STEP, SVG, PDF, and complete summary.
+- `examples/advanced/中文放样切除测试.json`: ordered-profile cut loft through a base block; SolidWorks run generates SLDPRT, STEP, SVG, PDF, and complete summary.
+- `examples/sketch/中文草图优化测试.json`: sketch fillet, sketch chamfer, mirrored circular holes, and linear circular sketch pattern; SolidWorks run generates SLDPRT, STEP, SVG, PDF, and complete summary.
+- `examples/sketch/中文槽口多边形样条测试.json`: straight slot, polygon, spline fit-point references and full-definition fallback; SolidWorks run generates SLDPRT, STEP, SVG, PDF, and complete summary.
+- `examples/sketch/中文转换实体等距切槽测试.json`: projected top-face loop, inward offset, full-definition check, and shallow groove cut; SolidWorks run generates SLDPRT, STEP, SVG, PDF, and complete summary.
+- `examples/sketch/中文开口槽工作流测试.json`: generated top-face sketch, converted and offset reference geometry, trim/delete cleanup, final fully constrained edge-slot cut, and complete SolidWorks SLDPRT/STEP/SVG/PDF output.
 
 ## Modeling Method
 
@@ -179,17 +179,17 @@ Before reporting success:
 Recommended commands:
 
 ```powershell
-D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py validate .\examples\中文旋转轴测试.json
-D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\中文旋转轴测试.json --backend preview
-D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\中文旋转轴测试.json --backend solidworks
-D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\中文旋转切除测试.json --backend solidworks
-D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\中文扫描把手测试.json --backend solidworks
-D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\中文圆弧扫描切除测试.json --backend solidworks
-D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\中文扭转扫描测试.json --backend solidworks
-D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\中文放样过渡管测试.json --backend solidworks
-D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\中文放样切除测试.json --backend solidworks
-D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\中文草图优化测试.json --backend solidworks
-D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\中文开口槽工作流测试.json --backend solidworks
+D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py validate .\examples\primitives\中文旋转轴测试.json
+D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\primitives\中文旋转轴测试.json --backend preview
+D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\primitives\中文旋转轴测试.json --backend solidworks
+D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\primitives\中文旋转切除测试.json --backend solidworks
+D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\advanced\中文扫描把手测试.json --backend solidworks
+D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\advanced\中文圆弧扫描切除测试.json --backend solidworks
+D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\advanced\中文扭转扫描测试.json --backend solidworks
+D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\advanced\中文放样过渡管测试.json --backend solidworks
+D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\advanced\中文放样切除测试.json --backend solidworks
+D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\sketch\中文草图优化测试.json --backend solidworks
+D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\sketch\中文开口槽工作流测试.json --backend solidworks
 D:\VibeCading\.conda\VibeCading\python.exe -m unittest discover .\mcp-server\tests
 ```
 
