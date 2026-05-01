@@ -1,0 +1,254 @@
+{
+  "job_id": "中文命名-偏置基准面测试-001",
+  "kind": "primitive_part",
+  "backend": "auto",
+  "units": "mm",
+  "part": {
+    "name": "中文命名偏置孔测试件",
+    "source_kind": "manual_primitive_chinese_offset_plane",
+    "material": "6061-T6 铝合金",
+    "export_formats": [
+      "pdf",
+      "svg",
+      "step"
+    ],
+    "operations": [
+      {
+        "id": "开始_底板草图",
+        "type": "start_sketch",
+        "parameters": {
+          "sketch": "底板草图",
+          "plane": "base"
+        }
+      },
+      {
+        "id": "底板轮廓",
+        "type": "add_center_rectangle",
+        "parameters": {
+          "sketch": "底板草图",
+          "center": [0, 0],
+          "size": [80, 50]
+        }
+      },
+      {
+        "id": "底板中心点",
+        "type": "add_point",
+        "parameters": {
+          "sketch": "底板草图",
+          "point": [0, 0]
+        }
+      },
+      {
+        "id": "底板水平垂直约束",
+        "type": "add_axis_constraints",
+        "parameters": {
+          "profile": "底板轮廓"
+        }
+      },
+      {
+        "id": "底板中心固定",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "point",
+            "id": "底板中心点"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "底板尺寸",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "底板长度",
+              "type": "entity",
+              "entity": {
+                "type": "profile_edge",
+                "profile": "底板轮廓",
+                "edge": "bottom"
+              },
+              "position": [0, -34]
+            },
+            {
+              "id": "底板宽度",
+              "type": "entity",
+              "entity": {
+                "type": "profile_edge",
+                "profile": "底板轮廓",
+                "edge": "left"
+              },
+              "position": [-52, 0]
+            },
+            {
+              "id": "中心到左边",
+              "type": "horizontal_between",
+              "first": {
+                "type": "point",
+                "id": "底板中心点"
+              },
+              "second": {
+                "type": "profile_edge",
+                "profile": "底板轮廓",
+                "edge": "left"
+              },
+              "position": [-20, 10]
+            },
+            {
+              "id": "中心到底边",
+              "type": "vertical_between",
+              "first": {
+                "type": "point",
+                "id": "底板中心点"
+              },
+              "second": {
+                "type": "profile_edge",
+                "profile": "底板轮廓",
+                "edge": "bottom"
+              },
+              "position": [10, -16]
+            }
+          ]
+        }
+      },
+      {
+        "id": "检查_底板草图完全定义",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "底板草图"
+        }
+      },
+      {
+        "id": "拉伸_底板",
+        "type": "extrude",
+        "parameters": {
+          "sketch": "底板草图",
+          "depth": 12
+        }
+      },
+      {
+        "id": "命名_底板顶面",
+        "type": "tag_face",
+        "parameters": {
+          "name": "底板顶面",
+          "target": {
+            "type": "body_face",
+            "feature": "拉伸_底板",
+            "normal": [0, 0, 1],
+            "position": "max",
+            "area": "largest",
+            "area_rank": 0
+          }
+        }
+      },
+      {
+        "id": "创建_孔加工偏置基准面",
+        "type": "create_offset_plane",
+        "parameters": {
+          "name": "孔加工偏置基准面",
+          "base": {
+            "type": "named_face",
+            "name": "底板顶面"
+          },
+          "offset": 5
+        }
+      },
+      {
+        "id": "开始_偏置孔草图",
+        "type": "start_sketch",
+        "parameters": {
+          "sketch": "偏置孔草图",
+          "plane": "孔加工偏置基准面"
+        }
+      },
+      {
+        "id": "偏置孔原点",
+        "type": "add_point",
+        "parameters": {
+          "sketch": "偏置孔草图",
+          "point": [0, 0]
+        }
+      },
+      {
+        "id": "偏置圆孔",
+        "type": "add_circle",
+        "parameters": {
+          "sketch": "偏置孔草图",
+          "center": [10, 5],
+          "diameter": 12
+        }
+      },
+      {
+        "id": "偏置孔原点固定",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "point",
+            "id": "偏置孔原点"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "偏置孔尺寸",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "偏置孔直径",
+              "type": "entity",
+              "entity": {
+                "type": "circle",
+                "id": "偏置圆孔"
+              },
+              "position": [25, 18]
+            },
+            {
+              "id": "偏置孔X定位",
+              "type": "horizontal_between",
+              "first": {
+                "type": "point",
+                "id": "偏置孔原点"
+              },
+              "second": {
+                "type": "circle_center",
+                "circle": "偏置圆孔"
+              },
+              "position": [5, 15]
+            },
+            {
+              "id": "偏置孔Y定位",
+              "type": "vertical_between",
+              "first": {
+                "type": "point",
+                "id": "偏置孔原点"
+              },
+              "second": {
+                "type": "circle_center",
+                "circle": "偏置圆孔"
+              },
+              "position": [22, 2]
+            }
+          ]
+        }
+      },
+      {
+        "id": "检查_偏置孔草图完全定义",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "偏置孔草图"
+        }
+      },
+      {
+        "id": "切除_偏置孔",
+        "type": "cut_extrude",
+        "parameters": {
+          "sketch": "偏置孔草图",
+          "depth": 25,
+          "reverse_direction": false
+        }
+      }
+    ]
+  }
+}

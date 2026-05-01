@@ -1,0 +1,207 @@
+{
+  "job_id": "中文扭转扫描测试-001",
+  "kind": "primitive_part",
+  "backend": "auto",
+  "units": "mm",
+  "part": {
+    "name": "中文扭转矩形扫描测试件",
+    "source_kind": "manual_primitive_twist_sweep",
+    "material": "铝合金",
+    "export_formats": [
+      "pdf",
+      "svg",
+      "step"
+    ],
+    "operations": [
+      {
+        "id": "开始_扭转扫描路径草图",
+        "type": "start_sketch",
+        "parameters": {
+          "sketch": "扭转扫描路径草图",
+          "plane": "front"
+        }
+      },
+      {
+        "id": "扭转扫描路径",
+        "type": "add_polyline",
+        "parameters": {
+          "sketch": "扭转扫描路径草图",
+          "points": [
+            [0, 0],
+            [80, 0]
+          ],
+          "closed": false
+        }
+      },
+      {
+        "id": "扭转路径水平约束",
+        "type": "add_axis_constraints",
+        "parameters": {
+          "profile": "扭转扫描路径"
+        }
+      },
+      {
+        "id": "扭转路径起点固定",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "profile_point",
+            "profile": "扭转扫描路径",
+            "index": 0,
+            "point": "start"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "扭转路径尺寸",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "扭转路径长度",
+              "type": "entity",
+              "entity": {
+                "type": "profile_segment",
+                "profile": "扭转扫描路径",
+                "index": 0
+              },
+              "position": [40, -10]
+            }
+          ]
+        }
+      },
+      {
+        "id": "检查_扭转扫描路径草图完全定义",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "扭转扫描路径草图"
+        }
+      },
+      {
+        "id": "结束_扭转扫描路径草图",
+        "type": "finish_sketch",
+        "parameters": {
+          "sketch": "扭转扫描路径草图"
+        }
+      },
+      {
+        "id": "开始_扭转矩形截面草图",
+        "type": "start_sketch",
+        "parameters": {
+          "sketch": "扭转矩形截面草图",
+          "plane": "right"
+        }
+      },
+      {
+        "id": "扭转矩形截面",
+        "type": "add_center_rectangle",
+        "parameters": {
+          "sketch": "扭转矩形截面草图",
+          "center": [0, 0],
+          "size": [12, 8]
+        }
+      },
+      {
+        "id": "扭转截面中心点",
+        "type": "add_point",
+        "parameters": {
+          "sketch": "扭转矩形截面草图",
+          "point": [0, 0]
+        }
+      },
+      {
+        "id": "扭转截面水平垂直约束",
+        "type": "add_axis_constraints",
+        "parameters": {
+          "profile": "扭转矩形截面"
+        }
+      },
+      {
+        "id": "扭转截面中心固定",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "point",
+            "id": "扭转截面中心点"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "扭转截面尺寸",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "扭转截面宽度",
+              "type": "entity",
+              "entity": {
+                "type": "profile_edge",
+                "profile": "扭转矩形截面",
+                "edge": "bottom"
+              },
+              "position": [0, -14]
+            },
+            {
+              "id": "扭转截面高度",
+              "type": "entity",
+              "entity": {
+                "type": "profile_edge",
+                "profile": "扭转矩形截面",
+                "edge": "left"
+              },
+              "position": [-16, 0]
+            },
+            {
+              "id": "扭转截面中心到左边",
+              "type": "horizontal_between",
+              "first": {
+                "type": "point",
+                "id": "扭转截面中心点"
+              },
+              "second": {
+                "type": "profile_edge",
+                "profile": "扭转矩形截面",
+                "edge": "left"
+              },
+              "position": [-5, 3]
+            },
+            {
+              "id": "扭转截面中心到底边",
+              "type": "vertical_between",
+              "first": {
+                "type": "point",
+                "id": "扭转截面中心点"
+              },
+              "second": {
+                "type": "profile_edge",
+                "profile": "扭转矩形截面",
+                "edge": "bottom"
+              },
+              "position": [5, -3]
+            }
+          ]
+        }
+      },
+      {
+        "id": "检查_扭转矩形截面草图完全定义",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "扭转矩形截面草图"
+        }
+      },
+      {
+        "id": "扫描_90度扭转矩形杆",
+        "type": "sweep",
+        "parameters": {
+          "profile": "扭转矩形截面草图",
+          "path": "扭转扫描路径草图",
+          "merge": true,
+          "twist_control": "constant_twist",
+          "twist_angle": 90
+        }
+      }
+    ]
+  }
+}

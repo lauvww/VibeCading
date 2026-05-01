@@ -1,0 +1,173 @@
+{
+  "job_id": "中文扫描把手测试-001",
+  "kind": "primitive_part",
+  "backend": "auto",
+  "units": "mm",
+  "part": {
+    "name": "中文扫描圆管把手测试件",
+    "source_kind": "manual_primitive_sweep",
+    "material": "304不锈钢",
+    "export_formats": [
+      "pdf",
+      "svg",
+      "step"
+    ],
+    "operations": [
+      {
+        "id": "开始_把手扫描路径草图",
+        "type": "start_sketch",
+        "parameters": {
+          "sketch": "把手扫描路径草图",
+          "plane": "front"
+        }
+      },
+      {
+        "id": "把手扫描路径",
+        "type": "add_polyline",
+        "parameters": {
+          "sketch": "把手扫描路径草图",
+          "points": [
+            [0, 0],
+            [80, 0],
+            [80, 40],
+            [120, 40]
+          ],
+          "closed": false
+        }
+      },
+      {
+        "id": "把手路径水平垂直约束",
+        "type": "add_axis_constraints",
+        "parameters": {
+          "profile": "把手扫描路径"
+        }
+      },
+      {
+        "id": "把手路径起点固定",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "profile_point",
+            "profile": "把手扫描路径",
+            "index": 0,
+            "point": "start"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "把手路径尺寸",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "把手第一段长度",
+              "type": "entity",
+              "entity": {
+                "type": "profile_segment",
+                "profile": "把手扫描路径",
+                "index": 0
+              },
+              "position": [40, -10]
+            },
+            {
+              "id": "把手竖直高度",
+              "type": "entity",
+              "entity": {
+                "type": "profile_segment",
+                "profile": "把手扫描路径",
+                "index": 1
+              },
+              "position": [92, 20]
+            },
+            {
+              "id": "把手第二段长度",
+              "type": "entity",
+              "entity": {
+                "type": "profile_segment",
+                "profile": "把手扫描路径",
+                "index": 2
+              },
+              "position": [100, 52]
+            }
+          ]
+        }
+      },
+      {
+        "id": "检查_把手扫描路径草图完全定义",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "把手扫描路径草图"
+        }
+      },
+      {
+        "id": "结束_把手扫描路径草图",
+        "type": "finish_sketch",
+        "parameters": {
+          "sketch": "把手扫描路径草图"
+        }
+      },
+      {
+        "id": "开始_圆管截面草图",
+        "type": "start_sketch",
+        "parameters": {
+          "sketch": "圆管截面草图",
+          "plane": "right"
+        }
+      },
+      {
+        "id": "圆管截面",
+        "type": "add_circle",
+        "parameters": {
+          "sketch": "圆管截面草图",
+          "center": [0, 0],
+          "diameter": 12
+        }
+      },
+      {
+        "id": "圆管截面圆心固定",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "circle_center",
+            "circle": "圆管截面"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "圆管截面直径",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "圆管外径",
+              "type": "entity",
+              "entity": {
+                "type": "circle",
+                "id": "圆管截面"
+              },
+              "position": [14, 10]
+            }
+          ]
+        }
+      },
+      {
+        "id": "检查_圆管截面草图完全定义",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "圆管截面草图"
+        }
+      },
+      {
+        "id": "扫描_圆管把手",
+        "type": "sweep",
+        "parameters": {
+          "profile": "圆管截面草图",
+          "path": "把手扫描路径草图",
+          "merge": true
+        }
+      }
+    ]
+  }
+}

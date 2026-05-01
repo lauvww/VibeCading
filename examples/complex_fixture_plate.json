@@ -1,0 +1,987 @@
+{
+  "job_id": "demo-complex-fixture-plate-001",
+  "kind": "primitive_part",
+  "backend": "auto",
+  "units": "mm",
+  "part": {
+    "name": "complex_fixture_plate",
+    "source_kind": "manual_primitive_complex_fixture",
+    "material": "6061-T6 aluminum",
+    "export_formats": [
+      "pdf",
+      "svg",
+      "step"
+    ],
+    "operations": [
+      {
+        "id": "start_base_sketch",
+        "type": "start_sketch",
+        "parameters": {
+          "sketch": "base_sketch",
+          "plane": "base"
+        }
+      },
+      {
+        "id": "base_outline",
+        "type": "add_center_rectangle",
+        "parameters": {
+          "sketch": "base_sketch",
+          "center": [0, 0],
+          "size": [180, 120]
+        }
+      },
+      {
+        "id": "base_center_ref",
+        "type": "add_point",
+        "parameters": {
+          "sketch": "base_sketch",
+          "point": [0, 0]
+        }
+      },
+      {
+        "id": "base_axis_constraints",
+        "type": "add_axis_constraints",
+        "parameters": {
+          "profile": "base_outline"
+        }
+      },
+      {
+        "id": "base_center_fixed",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "point",
+            "id": "base_center_ref"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "base_dimensions",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "base_length",
+              "type": "entity",
+              "entity": {
+                "type": "profile_edge",
+                "profile": "base_outline",
+                "edge": "bottom"
+              },
+              "position": [0, -72]
+            },
+            {
+              "id": "base_width",
+              "type": "entity",
+              "entity": {
+                "type": "profile_edge",
+                "profile": "base_outline",
+                "edge": "left"
+              },
+              "position": [-102, 0]
+            },
+            {
+              "id": "base_center_to_left_edge",
+              "type": "horizontal_between",
+              "first": {
+                "type": "point",
+                "id": "base_center_ref"
+              },
+              "second": {
+                "type": "profile_edge",
+                "profile": "base_outline",
+                "edge": "left"
+              },
+              "position": [-45, 12]
+            },
+            {
+              "id": "base_center_to_bottom_edge",
+              "type": "vertical_between",
+              "first": {
+                "type": "point",
+                "id": "base_center_ref"
+              },
+              "second": {
+                "type": "profile_edge",
+                "profile": "base_outline",
+                "edge": "bottom"
+              },
+              "position": [12, -30]
+            }
+          ]
+        }
+      },
+      {
+        "id": "validate_base_sketch",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "base_sketch"
+        }
+      },
+      {
+        "id": "extrude_base_plate",
+        "type": "extrude",
+        "parameters": {
+          "sketch": "base_sketch",
+          "depth": 12
+        }
+      },
+      {
+        "id": "start_boss_sketch",
+        "type": "start_sketch",
+        "parameters": {
+          "sketch": "boss_sketch",
+          "plane": "base"
+        }
+      },
+      {
+        "id": "boss_outline",
+        "type": "add_center_rectangle",
+        "parameters": {
+          "sketch": "boss_sketch",
+          "center": [0, 0],
+          "size": [80, 50]
+        }
+      },
+      {
+        "id": "boss_center_ref",
+        "type": "add_point",
+        "parameters": {
+          "sketch": "boss_sketch",
+          "point": [0, 0]
+        }
+      },
+      {
+        "id": "boss_axis_constraints",
+        "type": "add_axis_constraints",
+        "parameters": {
+          "profile": "boss_outline"
+        }
+      },
+      {
+        "id": "boss_center_fixed",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "point",
+            "id": "boss_center_ref"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "boss_dimensions",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "boss_length",
+              "type": "entity",
+              "entity": {
+                "type": "profile_edge",
+                "profile": "boss_outline",
+                "edge": "bottom"
+              },
+              "position": [0, -37]
+            },
+            {
+              "id": "boss_width",
+              "type": "entity",
+              "entity": {
+                "type": "profile_edge",
+                "profile": "boss_outline",
+                "edge": "left"
+              },
+              "position": [-52, 0]
+            },
+            {
+              "id": "boss_center_to_left_edge",
+              "type": "horizontal_between",
+              "first": {
+                "type": "point",
+                "id": "boss_center_ref"
+              },
+              "second": {
+                "type": "profile_edge",
+                "profile": "boss_outline",
+                "edge": "left"
+              },
+              "position": [-20, 12]
+            },
+            {
+              "id": "boss_center_to_bottom_edge",
+              "type": "vertical_between",
+              "first": {
+                "type": "point",
+                "id": "boss_center_ref"
+              },
+              "second": {
+                "type": "profile_edge",
+                "profile": "boss_outline",
+                "edge": "bottom"
+              },
+              "position": [12, -12]
+            }
+          ]
+        }
+      },
+      {
+        "id": "validate_boss_sketch",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "boss_sketch"
+        }
+      },
+      {
+        "id": "extrude_center_boss",
+        "type": "extrude",
+        "parameters": {
+          "sketch": "boss_sketch",
+          "depth": 30
+        }
+      },
+      {
+        "id": "start_long_rib_sketch",
+        "type": "start_sketch",
+        "parameters": {
+          "sketch": "long_rib_sketch",
+          "plane": "base"
+        }
+      },
+      {
+        "id": "long_rib_outline",
+        "type": "add_center_rectangle",
+        "parameters": {
+          "sketch": "long_rib_sketch",
+          "center": [0, 0],
+          "size": [150, 10]
+        }
+      },
+      {
+        "id": "long_rib_center_ref",
+        "type": "add_point",
+        "parameters": {
+          "sketch": "long_rib_sketch",
+          "point": [0, 0]
+        }
+      },
+      {
+        "id": "long_rib_axis_constraints",
+        "type": "add_axis_constraints",
+        "parameters": {
+          "profile": "long_rib_outline"
+        }
+      },
+      {
+        "id": "long_rib_center_fixed",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "point",
+            "id": "long_rib_center_ref"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "long_rib_dimensions",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "long_rib_length",
+              "type": "entity",
+              "entity": {
+                "type": "profile_edge",
+                "profile": "long_rib_outline",
+                "edge": "bottom"
+              },
+              "position": [0, -17]
+            },
+            {
+              "id": "long_rib_width",
+              "type": "entity",
+              "entity": {
+                "type": "profile_edge",
+                "profile": "long_rib_outline",
+                "edge": "left"
+              },
+              "position": [-87, 0]
+            },
+            {
+              "id": "long_rib_center_to_left_edge",
+              "type": "horizontal_between",
+              "first": {
+                "type": "point",
+                "id": "long_rib_center_ref"
+              },
+              "second": {
+                "type": "profile_edge",
+                "profile": "long_rib_outline",
+                "edge": "left"
+              },
+              "position": [-37, 9]
+            },
+            {
+              "id": "long_rib_center_to_bottom_edge",
+              "type": "vertical_between",
+              "first": {
+                "type": "point",
+                "id": "long_rib_center_ref"
+              },
+              "second": {
+                "type": "profile_edge",
+                "profile": "long_rib_outline",
+                "edge": "bottom"
+              },
+              "position": [9, -2]
+            }
+          ]
+        }
+      },
+      {
+        "id": "validate_long_rib_sketch",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "long_rib_sketch"
+        }
+      },
+      {
+        "id": "extrude_long_rib",
+        "type": "extrude",
+        "parameters": {
+          "sketch": "long_rib_sketch",
+          "depth": 20
+        }
+      },
+      {
+        "id": "start_cross_rib_sketch",
+        "type": "start_sketch",
+        "parameters": {
+          "sketch": "cross_rib_sketch",
+          "plane": "base"
+        }
+      },
+      {
+        "id": "cross_rib_outline",
+        "type": "add_center_rectangle",
+        "parameters": {
+          "sketch": "cross_rib_sketch",
+          "center": [0, 0],
+          "size": [12, 100]
+        }
+      },
+      {
+        "id": "cross_rib_center_ref",
+        "type": "add_point",
+        "parameters": {
+          "sketch": "cross_rib_sketch",
+          "point": [0, 0]
+        }
+      },
+      {
+        "id": "cross_rib_axis_constraints",
+        "type": "add_axis_constraints",
+        "parameters": {
+          "profile": "cross_rib_outline"
+        }
+      },
+      {
+        "id": "cross_rib_center_fixed",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "point",
+            "id": "cross_rib_center_ref"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "cross_rib_dimensions",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "cross_rib_length",
+              "type": "entity",
+              "entity": {
+                "type": "profile_edge",
+                "profile": "cross_rib_outline",
+                "edge": "bottom"
+              },
+              "position": [0, -62]
+            },
+            {
+              "id": "cross_rib_width",
+              "type": "entity",
+              "entity": {
+                "type": "profile_edge",
+                "profile": "cross_rib_outline",
+                "edge": "left"
+              },
+              "position": [-18, 0]
+            },
+            {
+              "id": "cross_rib_center_to_left_edge",
+              "type": "horizontal_between",
+              "first": {
+                "type": "point",
+                "id": "cross_rib_center_ref"
+              },
+              "second": {
+                "type": "profile_edge",
+                "profile": "cross_rib_outline",
+                "edge": "left"
+              },
+              "position": [-3, 9]
+            },
+            {
+              "id": "cross_rib_center_to_bottom_edge",
+              "type": "vertical_between",
+              "first": {
+                "type": "point",
+                "id": "cross_rib_center_ref"
+              },
+              "second": {
+                "type": "profile_edge",
+                "profile": "cross_rib_outline",
+                "edge": "bottom"
+              },
+              "position": [9, -25]
+            }
+          ]
+        }
+      },
+      {
+        "id": "validate_cross_rib_sketch",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "cross_rib_sketch"
+        }
+      },
+      {
+        "id": "extrude_cross_rib",
+        "type": "extrude",
+        "parameters": {
+          "sketch": "cross_rib_sketch",
+          "depth": 22
+        }
+      },
+      {
+        "id": "start_hole_cut_sketch",
+        "type": "start_sketch",
+        "parameters": {
+          "sketch": "hole_cut_sketch",
+          "plane": "base"
+        }
+      },
+      {
+        "id": "hole_cut_origin_ref",
+        "type": "add_point",
+        "parameters": {
+          "sketch": "hole_cut_sketch",
+          "point": [0, 0]
+        }
+      },
+      {
+        "id": "corner_hole_1",
+        "type": "add_circle",
+        "parameters": {
+          "sketch": "hole_cut_sketch",
+          "center": [-70, -45],
+          "diameter": 10
+        }
+      },
+      {
+        "id": "corner_hole_2",
+        "type": "add_circle",
+        "parameters": {
+          "sketch": "hole_cut_sketch",
+          "center": [70, -45],
+          "diameter": 10
+        }
+      },
+      {
+        "id": "corner_hole_3",
+        "type": "add_circle",
+        "parameters": {
+          "sketch": "hole_cut_sketch",
+          "center": [-70, 45],
+          "diameter": 10
+        }
+      },
+      {
+        "id": "corner_hole_4",
+        "type": "add_circle",
+        "parameters": {
+          "sketch": "hole_cut_sketch",
+          "center": [70, 45],
+          "diameter": 10
+        }
+      },
+      {
+        "id": "boss_hole_1",
+        "type": "add_circle",
+        "parameters": {
+          "sketch": "hole_cut_sketch",
+          "center": [-22, -12],
+          "diameter": 12
+        }
+      },
+      {
+        "id": "boss_hole_2",
+        "type": "add_circle",
+        "parameters": {
+          "sketch": "hole_cut_sketch",
+          "center": [22, 12],
+          "diameter": 12
+        }
+      },
+      {
+        "id": "hole_cut_origin_fixed",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "point",
+            "id": "hole_cut_origin_ref"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "hole_cut_dimensions",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "corner_hole_1_diameter",
+              "type": "entity",
+              "entity": {
+                "type": "circle",
+                "id": "corner_hole_1"
+              },
+              "position": [-57, -32]
+            },
+            {
+              "id": "corner_hole_1_x",
+              "type": "horizontal_between",
+              "first": {
+                "type": "point",
+                "id": "hole_cut_origin_ref"
+              },
+              "second": {
+                "type": "circle_center",
+                "circle": "corner_hole_1"
+              },
+              "position": [-35, -34]
+            },
+            {
+              "id": "corner_hole_1_y",
+              "type": "vertical_between",
+              "first": {
+                "type": "point",
+                "id": "hole_cut_origin_ref"
+              },
+              "second": {
+                "type": "circle_center",
+                "circle": "corner_hole_1"
+              },
+              "position": [-58, -22]
+            },
+            {
+              "id": "corner_hole_2_diameter",
+              "type": "entity",
+              "entity": {
+                "type": "circle",
+                "id": "corner_hole_2"
+              },
+              "position": [83, -32]
+            },
+            {
+              "id": "corner_hole_2_x",
+              "type": "horizontal_between",
+              "first": {
+                "type": "point",
+                "id": "hole_cut_origin_ref"
+              },
+              "second": {
+                "type": "circle_center",
+                "circle": "corner_hole_2"
+              },
+              "position": [35, -34]
+            },
+            {
+              "id": "corner_hole_2_y",
+              "type": "vertical_between",
+              "first": {
+                "type": "point",
+                "id": "hole_cut_origin_ref"
+              },
+              "second": {
+                "type": "circle_center",
+                "circle": "corner_hole_2"
+              },
+              "position": [82, -22]
+            },
+            {
+              "id": "corner_hole_3_diameter",
+              "type": "entity",
+              "entity": {
+                "type": "circle",
+                "id": "corner_hole_3"
+              },
+              "position": [-57, 58]
+            },
+            {
+              "id": "corner_hole_3_x",
+              "type": "horizontal_between",
+              "first": {
+                "type": "point",
+                "id": "hole_cut_origin_ref"
+              },
+              "second": {
+                "type": "circle_center",
+                "circle": "corner_hole_3"
+              },
+              "position": [-35, 56]
+            },
+            {
+              "id": "corner_hole_3_y",
+              "type": "vertical_between",
+              "first": {
+                "type": "point",
+                "id": "hole_cut_origin_ref"
+              },
+              "second": {
+                "type": "circle_center",
+                "circle": "corner_hole_3"
+              },
+              "position": [-58, 22]
+            },
+            {
+              "id": "corner_hole_4_diameter",
+              "type": "entity",
+              "entity": {
+                "type": "circle",
+                "id": "corner_hole_4"
+              },
+              "position": [83, 58]
+            },
+            {
+              "id": "corner_hole_4_x",
+              "type": "horizontal_between",
+              "first": {
+                "type": "point",
+                "id": "hole_cut_origin_ref"
+              },
+              "second": {
+                "type": "circle_center",
+                "circle": "corner_hole_4"
+              },
+              "position": [35, 56]
+            },
+            {
+              "id": "corner_hole_4_y",
+              "type": "vertical_between",
+              "first": {
+                "type": "point",
+                "id": "hole_cut_origin_ref"
+              },
+              "second": {
+                "type": "circle_center",
+                "circle": "corner_hole_4"
+              },
+              "position": [82, 22]
+            },
+            {
+              "id": "boss_hole_1_diameter",
+              "type": "entity",
+              "entity": {
+                "type": "circle",
+                "id": "boss_hole_1"
+              },
+              "position": [-9, 1]
+            },
+            {
+              "id": "boss_hole_1_x",
+              "type": "horizontal_between",
+              "first": {
+                "type": "point",
+                "id": "hole_cut_origin_ref"
+              },
+              "second": {
+                "type": "circle_center",
+                "circle": "boss_hole_1"
+              },
+              "position": [-11, -1]
+            },
+            {
+              "id": "boss_hole_1_y",
+              "type": "vertical_between",
+              "first": {
+                "type": "point",
+                "id": "hole_cut_origin_ref"
+              },
+              "second": {
+                "type": "circle_center",
+                "circle": "boss_hole_1"
+              },
+              "position": [-10, -6]
+            },
+            {
+              "id": "boss_hole_2_diameter",
+              "type": "entity",
+              "entity": {
+                "type": "circle",
+                "id": "boss_hole_2"
+              },
+              "position": [35, 25]
+            },
+            {
+              "id": "boss_hole_2_x",
+              "type": "horizontal_between",
+              "first": {
+                "type": "point",
+                "id": "hole_cut_origin_ref"
+              },
+              "second": {
+                "type": "circle_center",
+                "circle": "boss_hole_2"
+              },
+              "position": [11, 25]
+            },
+            {
+              "id": "boss_hole_2_y",
+              "type": "vertical_between",
+              "first": {
+                "type": "point",
+                "id": "hole_cut_origin_ref"
+              },
+              "second": {
+                "type": "circle_center",
+                "circle": "boss_hole_2"
+              },
+              "position": [35, 6]
+            }
+          ]
+        }
+      },
+      {
+        "id": "validate_hole_cut_sketch",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "hole_cut_sketch"
+        }
+      },
+      {
+        "id": "cut_holes",
+        "type": "cut_extrude",
+        "parameters": {
+          "sketch": "hole_cut_sketch",
+          "depth": 45,
+          "reverse_direction": true
+        }
+      },
+      {
+        "id": "start_slot_cut_sketch",
+        "type": "start_sketch",
+        "parameters": {
+          "sketch": "slot_cut_sketch",
+          "plane": "base"
+        }
+      },
+      {
+        "id": "slot_lower_outline",
+        "type": "add_center_rectangle",
+        "parameters": {
+          "sketch": "slot_cut_sketch",
+          "center": [0, -48],
+          "size": [60, 12]
+        }
+      },
+      {
+        "id": "slot_upper_outline",
+        "type": "add_center_rectangle",
+        "parameters": {
+          "sketch": "slot_cut_sketch",
+          "center": [0, 48],
+          "size": [60, 12]
+        }
+      },
+      {
+        "id": "slot_lower_center_ref",
+        "type": "add_point",
+        "parameters": {
+          "sketch": "slot_cut_sketch",
+          "point": [0, -48]
+        }
+      },
+      {
+        "id": "slot_upper_center_ref",
+        "type": "add_point",
+        "parameters": {
+          "sketch": "slot_cut_sketch",
+          "point": [0, 48]
+        }
+      },
+      {
+        "id": "slot_lower_axis_constraints",
+        "type": "add_axis_constraints",
+        "parameters": {
+          "profile": "slot_lower_outline"
+        }
+      },
+      {
+        "id": "slot_upper_axis_constraints",
+        "type": "add_axis_constraints",
+        "parameters": {
+          "profile": "slot_upper_outline"
+        }
+      },
+      {
+        "id": "slot_lower_center_fixed",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "point",
+            "id": "slot_lower_center_ref"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "slot_upper_center_fixed",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "point",
+            "id": "slot_upper_center_ref"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "slot_dimensions",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "slot_lower_length",
+              "type": "entity",
+              "entity": {
+                "type": "profile_edge",
+                "profile": "slot_lower_outline",
+                "edge": "bottom"
+              },
+              "position": [0, -66]
+            },
+            {
+              "id": "slot_lower_width",
+              "type": "entity",
+              "entity": {
+                "type": "profile_edge",
+                "profile": "slot_lower_outline",
+                "edge": "left"
+              },
+              "position": [-42, -48]
+            },
+            {
+              "id": "slot_lower_center_to_left_edge",
+              "type": "horizontal_between",
+              "first": {
+                "type": "point",
+                "id": "slot_lower_center_ref"
+              },
+              "second": {
+                "type": "profile_edge",
+                "profile": "slot_lower_outline",
+                "edge": "left"
+              },
+              "position": [-15, -38]
+            },
+            {
+              "id": "slot_lower_center_to_bottom_edge",
+              "type": "vertical_between",
+              "first": {
+                "type": "point",
+                "id": "slot_lower_center_ref"
+              },
+              "second": {
+                "type": "profile_edge",
+                "profile": "slot_lower_outline",
+                "edge": "bottom"
+              },
+              "position": [10, -51]
+            },
+            {
+              "id": "slot_upper_length",
+              "type": "entity",
+              "entity": {
+                "type": "profile_edge",
+                "profile": "slot_upper_outline",
+                "edge": "bottom"
+              },
+              "position": [0, 30]
+            },
+            {
+              "id": "slot_upper_width",
+              "type": "entity",
+              "entity": {
+                "type": "profile_edge",
+                "profile": "slot_upper_outline",
+                "edge": "left"
+              },
+              "position": [-42, 48]
+            },
+            {
+              "id": "slot_upper_center_to_left_edge",
+              "type": "horizontal_between",
+              "first": {
+                "type": "point",
+                "id": "slot_upper_center_ref"
+              },
+              "second": {
+                "type": "profile_edge",
+                "profile": "slot_upper_outline",
+                "edge": "left"
+              },
+              "position": [-15, 58]
+            },
+            {
+              "id": "slot_upper_center_to_bottom_edge",
+              "type": "vertical_between",
+              "first": {
+                "type": "point",
+                "id": "slot_upper_center_ref"
+              },
+              "second": {
+                "type": "profile_edge",
+                "profile": "slot_upper_outline",
+                "edge": "bottom"
+              },
+              "position": [10, 45]
+            }
+          ]
+        }
+      },
+      {
+        "id": "validate_slot_cut_sketch",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "slot_cut_sketch"
+        }
+      },
+      {
+        "id": "cut_clearance_slots",
+        "type": "cut_extrude",
+        "parameters": {
+          "sketch": "slot_cut_sketch",
+          "depth": 18,
+          "reverse_direction": true
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,339 @@
+{
+  "job_id": "中文开口槽工作流测试-001",
+  "kind": "primitive_part",
+  "units": "mm",
+  "part": {
+    "name": "中文开口槽工作流测试件",
+    "source_kind": "manual_primitive_open_slot_workflow",
+    "material": "6061-T6 铝合金",
+    "export_formats": ["pdf", "svg", "step"],
+    "operations": [
+      {
+        "id": "开始_开口槽基板草图",
+        "type": "start_sketch",
+        "parameters": {
+          "sketch": "开口槽基板草图",
+          "plane": "front"
+        }
+      },
+      {
+        "id": "开口槽基板轮廓",
+        "type": "add_center_rectangle",
+        "parameters": {
+          "sketch": "开口槽基板草图",
+          "center": [0, 0],
+          "size": [120, 70]
+        }
+      },
+      {
+        "id": "开口槽基板中心点",
+        "type": "add_point",
+        "parameters": {
+          "sketch": "开口槽基板草图",
+          "point": [0, 0]
+        }
+      },
+      {
+        "id": "开口槽基板水平垂直约束",
+        "type": "add_axis_constraints",
+        "parameters": {
+          "profile": "开口槽基板轮廓"
+        }
+      },
+      {
+        "id": "开口槽基板中心固定",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "point",
+            "id": "开口槽基板中心点"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "开口槽基板尺寸",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "开口槽基板长度",
+              "type": "entity",
+              "entity": {
+                "type": "profile_edge",
+                "profile": "开口槽基板轮廓",
+                "edge": "bottom"
+              },
+              "position": [0, -43]
+            },
+            {
+              "id": "开口槽基板宽度",
+              "type": "entity",
+              "entity": {
+                "type": "profile_edge",
+                "profile": "开口槽基板轮廓",
+                "edge": "left"
+              },
+              "position": [-72, 0]
+            },
+            {
+              "id": "开口槽基板中心到左边",
+              "type": "horizontal_between",
+              "first": {
+                "type": "point",
+                "id": "开口槽基板中心点"
+              },
+              "second": {
+                "type": "profile_edge",
+                "profile": "开口槽基板轮廓",
+                "edge": "left"
+              },
+              "position": [-28, 18]
+            },
+            {
+              "id": "开口槽基板中心到底边",
+              "type": "vertical_between",
+              "first": {
+                "type": "point",
+                "id": "开口槽基板中心点"
+              },
+              "second": {
+                "type": "profile_edge",
+                "profile": "开口槽基板轮廓",
+                "edge": "bottom"
+              },
+              "position": [16, -22]
+            }
+          ]
+        }
+      },
+      {
+        "id": "检查_开口槽基板草图完全定义",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "开口槽基板草图"
+        }
+      },
+      {
+        "id": "拉伸_开口槽基板",
+        "type": "extrude",
+        "parameters": {
+          "sketch": "开口槽基板草图",
+          "depth": 8
+        }
+      },
+      {
+        "id": "开始_开口槽顶面草图",
+        "type": "start_sketch_on_face",
+        "parameters": {
+          "sketch": "开口槽顶面草图",
+          "target": {
+            "type": "body_face",
+            "feature": "拉伸_开口槽基板",
+            "normal": [0, 0, 1],
+            "position": "max",
+            "area": "largest",
+            "area_rank": 0
+          }
+        }
+      },
+      {
+        "id": "转换_开口槽外轮廓参考",
+        "type": "convert_entities",
+        "parameters": {
+          "sketch": "开口槽顶面草图",
+          "target": {
+            "type": "body_face_edges",
+            "feature": "拉伸_开口槽基板",
+            "normal": [0, 0, 1],
+            "position": "max",
+            "area": "largest",
+            "area_rank": 0,
+            "loop": "outer"
+          },
+          "prefer_native": false,
+          "chain": false
+        }
+      },
+      {
+        "id": "等距_开口槽内侧参考",
+        "type": "offset_entities",
+        "parameters": {
+          "sketch": "开口槽顶面草图",
+          "source": {
+            "type": "profile",
+            "id": "转换_开口槽外轮廓参考"
+          },
+          "offset": 8,
+          "direction": "inside",
+          "chain": true,
+          "add_dimensions": true
+        }
+      },
+      {
+        "id": "开口槽临时中心线",
+        "type": "add_polyline",
+        "parameters": {
+          "sketch": "开口槽顶面草图",
+          "points": [[0, 20], [0, 45]]
+        }
+      },
+      {
+        "id": "开口槽临时中心线垂直",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "profile_segment",
+            "profile": "开口槽临时中心线",
+            "index": 0
+          },
+          "relation": "vertical"
+        }
+      },
+      {
+        "id": "剪裁_开口槽临时中心线",
+        "type": "trim_entities",
+        "parameters": {
+          "sketch": "开口槽顶面草图",
+          "mode": "entity_point",
+          "entities": [
+            {
+              "type": "profile_segment",
+              "profile": "开口槽临时中心线",
+              "index": 0
+            }
+          ],
+          "trim_point": [0, 42]
+        }
+      },
+      {
+        "id": "删除_开口槽参考草图",
+        "type": "delete_entities",
+        "parameters": {
+          "sketch": "开口槽顶面草图",
+          "entities": [
+            {
+              "type": "profile",
+              "id": "转换_开口槽外轮廓参考"
+            },
+            {
+              "type": "profile",
+              "id": "等距_开口槽内侧参考"
+            },
+            {
+              "type": "profile",
+              "id": "开口槽临时中心线"
+            }
+          ]
+        }
+      },
+      {
+        "id": "开口槽切除轮廓",
+        "type": "add_center_rectangle",
+        "parameters": {
+          "sketch": "开口槽顶面草图",
+          "center": [0, 34],
+          "size": [28, 18]
+        }
+      },
+      {
+        "id": "开口槽切除中心点",
+        "type": "add_point",
+        "parameters": {
+          "sketch": "开口槽顶面草图",
+          "point": [0, 34]
+        }
+      },
+      {
+        "id": "开口槽切除轮廓水平垂直约束",
+        "type": "add_axis_constraints",
+        "parameters": {
+          "profile": "开口槽切除轮廓"
+        }
+      },
+      {
+        "id": "开口槽切除中心固定",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "point",
+            "id": "开口槽切除中心点"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "开口槽切除轮廓尺寸",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "开口槽宽度",
+              "type": "entity",
+              "entity": {
+                "type": "profile_edge",
+                "profile": "开口槽切除轮廓",
+                "edge": "bottom"
+              },
+              "position": [0, 20]
+            },
+            {
+              "id": "开口槽伸入长度",
+              "type": "entity",
+              "entity": {
+                "type": "profile_edge",
+                "profile": "开口槽切除轮廓",
+                "edge": "left"
+              },
+              "position": [-22, 34]
+            },
+            {
+              "id": "开口槽中心到左边",
+              "type": "horizontal_between",
+              "first": {
+                "type": "point",
+                "id": "开口槽切除中心点"
+              },
+              "second": {
+                "type": "profile_edge",
+                "profile": "开口槽切除轮廓",
+                "edge": "left"
+              },
+              "position": [-7, 31]
+            },
+            {
+              "id": "开口槽中心到底边",
+              "type": "vertical_between",
+              "first": {
+                "type": "point",
+                "id": "开口槽切除中心点"
+              },
+              "second": {
+                "type": "profile_edge",
+                "profile": "开口槽切除轮廓",
+                "edge": "bottom"
+              },
+              "position": [9, 28]
+            }
+          ]
+        }
+      },
+      {
+        "id": "检查_开口槽顶面草图完全定义",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "开口槽顶面草图"
+        }
+      },
+      {
+        "id": "切除_开口槽",
+        "type": "cut_extrude",
+        "parameters": {
+          "sketch": "开口槽顶面草图",
+          "depth": 3,
+          "reverse_direction": false
+        }
+      }
+    ]
+  }
+}

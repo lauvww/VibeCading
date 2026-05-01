@@ -1,0 +1,346 @@
+{
+  "job_id": "中文放样切除测试-001",
+  "kind": "primitive_part",
+  "backend": "auto",
+  "units": "mm",
+  "part": {
+    "name": "中文放样切除变径孔测试件",
+    "source_kind": "manual_primitive_cut_loft",
+    "material": "45钢",
+    "export_formats": [
+      "pdf",
+      "svg",
+      "step"
+    ],
+    "operations": [
+      {
+        "id": "开始_基体草图",
+        "type": "start_sketch",
+        "parameters": {
+          "sketch": "基体草图",
+          "plane": "front"
+        }
+      },
+      {
+        "id": "基体矩形轮廓",
+        "type": "add_center_rectangle",
+        "parameters": {
+          "sketch": "基体草图",
+          "center": [0, 0],
+          "size": [100, 60]
+        }
+      },
+      {
+        "id": "基体中心点",
+        "type": "add_point",
+        "parameters": {
+          "sketch": "基体草图",
+          "point": [0, 0]
+        }
+      },
+      {
+        "id": "基体水平垂直约束",
+        "type": "add_axis_constraints",
+        "parameters": {
+          "profile": "基体矩形轮廓"
+        }
+      },
+      {
+        "id": "基体中心固定",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "point",
+            "id": "基体中心点"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "基体尺寸",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "基体长度",
+              "type": "entity",
+              "entity": {
+                "type": "profile_edge",
+                "profile": "基体矩形轮廓",
+                "edge": "bottom"
+              },
+              "position": [0, -38]
+            },
+            {
+              "id": "基体宽度",
+              "type": "entity",
+              "entity": {
+                "type": "profile_edge",
+                "profile": "基体矩形轮廓",
+                "edge": "left"
+              },
+              "position": [-62, 0]
+            },
+            {
+              "id": "中心到左边",
+              "type": "horizontal_between",
+              "first": {
+                "type": "point",
+                "id": "基体中心点"
+              },
+              "second": {
+                "type": "profile_edge",
+                "profile": "基体矩形轮廓",
+                "edge": "left"
+              },
+              "position": [-24, 12]
+            },
+            {
+              "id": "中心到底边",
+              "type": "vertical_between",
+              "first": {
+                "type": "point",
+                "id": "基体中心点"
+              },
+              "second": {
+                "type": "profile_edge",
+                "profile": "基体矩形轮廓",
+                "edge": "bottom"
+              },
+              "position": [12, -18]
+            }
+          ]
+        }
+      },
+      {
+        "id": "检查_基体草图完全定义",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "基体草图"
+        }
+      },
+      {
+        "id": "拉伸_基体",
+        "type": "extrude",
+        "parameters": {
+          "sketch": "基体草图",
+          "depth": 90
+        }
+      },
+      {
+        "id": "创建_切除中间截面基准面",
+        "type": "create_offset_plane",
+        "parameters": {
+          "name": "切除中间截面基准面",
+          "base": {
+            "type": "plane",
+            "name": "front"
+          },
+          "offset": 45
+        }
+      },
+      {
+        "id": "创建_切除出口截面基准面",
+        "type": "create_offset_plane",
+        "parameters": {
+          "name": "切除出口截面基准面",
+          "base": {
+            "type": "plane",
+            "name": "front"
+          },
+          "offset": 90
+        }
+      },
+      {
+        "id": "开始_入口切除截面草图",
+        "type": "start_sketch",
+        "parameters": {
+          "sketch": "入口切除截面草图",
+          "plane": "front"
+        }
+      },
+      {
+        "id": "入口切除圆",
+        "type": "add_circle",
+        "parameters": {
+          "sketch": "入口切除截面草图",
+          "center": [0, 0],
+          "diameter": 30
+        }
+      },
+      {
+        "id": "入口切除圆心固定",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "circle_center",
+            "circle": "入口切除圆"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "入口切除圆尺寸",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "入口切除直径",
+              "type": "entity",
+              "entity": {
+                "type": "circle",
+                "id": "入口切除圆"
+              },
+              "position": [20, 18]
+            }
+          ]
+        }
+      },
+      {
+        "id": "检查_入口切除截面完全定义",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "入口切除截面草图"
+        }
+      },
+      {
+        "id": "结束_入口切除截面草图",
+        "type": "finish_sketch",
+        "parameters": {
+          "sketch": "入口切除截面草图"
+        }
+      },
+      {
+        "id": "开始_中间切除截面草图",
+        "type": "start_sketch",
+        "parameters": {
+          "sketch": "中间切除截面草图",
+          "plane": "切除中间截面基准面"
+        }
+      },
+      {
+        "id": "中间切除圆",
+        "type": "add_circle",
+        "parameters": {
+          "sketch": "中间切除截面草图",
+          "center": [0, 0],
+          "diameter": 20
+        }
+      },
+      {
+        "id": "中间切除圆心固定",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "circle_center",
+            "circle": "中间切除圆"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "中间切除圆尺寸",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "中间切除直径",
+              "type": "entity",
+              "entity": {
+                "type": "circle",
+                "id": "中间切除圆"
+              },
+              "position": [16, 14]
+            }
+          ]
+        }
+      },
+      {
+        "id": "检查_中间切除截面完全定义",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "中间切除截面草图"
+        }
+      },
+      {
+        "id": "结束_中间切除截面草图",
+        "type": "finish_sketch",
+        "parameters": {
+          "sketch": "中间切除截面草图"
+        }
+      },
+      {
+        "id": "开始_出口切除截面草图",
+        "type": "start_sketch",
+        "parameters": {
+          "sketch": "出口切除截面草图",
+          "plane": "切除出口截面基准面"
+        }
+      },
+      {
+        "id": "出口切除圆",
+        "type": "add_circle",
+        "parameters": {
+          "sketch": "出口切除截面草图",
+          "center": [0, 0],
+          "diameter": 12
+        }
+      },
+      {
+        "id": "出口切除圆心固定",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "circle_center",
+            "circle": "出口切除圆"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "出口切除圆尺寸",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "出口切除直径",
+              "type": "entity",
+              "entity": {
+                "type": "circle",
+                "id": "出口切除圆"
+              },
+              "position": [12, 10]
+            }
+          ]
+        }
+      },
+      {
+        "id": "检查_出口切除截面完全定义",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "出口切除截面草图"
+        }
+      },
+      {
+        "id": "结束_出口切除截面草图",
+        "type": "finish_sketch",
+        "parameters": {
+          "sketch": "出口切除截面草图"
+        }
+      },
+      {
+        "id": "放样切除_变径通孔",
+        "type": "cut_loft",
+        "parameters": {
+          "profiles": [
+            "入口切除截面草图",
+            "中间切除截面草图",
+            "出口切除截面草图"
+          ],
+          "keep_tangency": false,
+          "use_auto_select": true
+        }
+      }
+    ]
+  }
+}

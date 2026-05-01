@@ -1,0 +1,240 @@
+{
+  "job_id": "中文草图剪裁测试-001",
+  "kind": "primitive_part",
+  "units": "mm",
+  "part": {
+    "name": "中文草图剪裁测试件",
+    "source_kind": "manual_primitive_sketch_trim",
+    "material": "6061-T6 铝合金",
+    "export_formats": ["pdf", "svg", "step"],
+    "operations": [
+      {
+        "id": "开始_剪裁测试基板草图",
+        "type": "start_sketch",
+        "parameters": {
+          "sketch": "剪裁测试基板草图",
+          "plane": "front"
+        }
+      },
+      {
+        "id": "剪裁测试基板轮廓",
+        "type": "add_center_rectangle",
+        "parameters": {
+          "sketch": "剪裁测试基板草图",
+          "center": [0, 0],
+          "size": [100, 60]
+        }
+      },
+      {
+        "id": "剪裁测试基板中心点",
+        "type": "add_point",
+        "parameters": {
+          "sketch": "剪裁测试基板草图",
+          "point": [0, 0]
+        }
+      },
+      {
+        "id": "剪裁测试基板水平垂直约束",
+        "type": "add_axis_constraints",
+        "parameters": {
+          "profile": "剪裁测试基板轮廓"
+        }
+      },
+      {
+        "id": "剪裁测试基板中心固定",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "point",
+            "id": "剪裁测试基板中心点"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "剪裁测试基板尺寸",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "剪裁测试基板长度",
+              "type": "entity",
+              "entity": {
+                "type": "profile_edge",
+                "profile": "剪裁测试基板轮廓",
+                "edge": "bottom"
+              },
+              "position": [0, -38]
+            },
+            {
+              "id": "剪裁测试基板宽度",
+              "type": "entity",
+              "entity": {
+                "type": "profile_edge",
+                "profile": "剪裁测试基板轮廓",
+                "edge": "left"
+              },
+              "position": [-62, 0]
+            },
+            {
+              "id": "剪裁测试基板中心到左边",
+              "type": "horizontal_between",
+              "first": {
+                "type": "point",
+                "id": "剪裁测试基板中心点"
+              },
+              "second": {
+                "type": "profile_edge",
+                "profile": "剪裁测试基板轮廓",
+                "edge": "left"
+              },
+              "position": [-24, 14]
+            },
+            {
+              "id": "剪裁测试基板中心到底边",
+              "type": "vertical_between",
+              "first": {
+                "type": "point",
+                "id": "剪裁测试基板中心点"
+              },
+              "second": {
+                "type": "profile_edge",
+                "profile": "剪裁测试基板轮廓",
+                "edge": "bottom"
+              },
+              "position": [12, -18]
+            }
+          ]
+        }
+      },
+      {
+        "id": "检查_剪裁测试基板草图完全定义",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "剪裁测试基板草图"
+        }
+      },
+      {
+        "id": "拉伸_剪裁测试基板",
+        "type": "extrude",
+        "parameters": {
+          "sketch": "剪裁测试基板草图",
+          "depth": 8
+        }
+      },
+      {
+        "id": "开始_上表面剪裁草图",
+        "type": "start_sketch_on_face",
+        "parameters": {
+          "sketch": "上表面剪裁草图",
+          "target": {
+            "type": "body_face",
+            "feature": "拉伸_剪裁测试基板",
+            "normal": [0, 0, 1],
+            "position": "max",
+            "area": "largest",
+            "area_rank": 0
+          }
+        }
+      },
+      {
+        "id": "剪裁草图中心点",
+        "type": "add_point",
+        "parameters": {
+          "sketch": "上表面剪裁草图",
+          "point": [0, 0]
+        }
+      },
+      {
+        "id": "剪裁草图中心固定",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "point",
+            "id": "剪裁草图中心点"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "转换_剪裁边界外轮廓",
+        "type": "convert_entities",
+        "parameters": {
+          "sketch": "上表面剪裁草图",
+          "target": {
+            "type": "body_face_edges",
+            "feature": "拉伸_剪裁测试基板",
+            "normal": [0, 0, 1],
+            "position": "max",
+            "area": "largest",
+            "area_rank": 0,
+            "loop": "outer"
+          },
+          "prefer_native": false,
+          "chain": false
+        }
+      },
+      {
+        "id": "待剪裁水平中心线",
+        "type": "add_polyline",
+        "parameters": {
+          "sketch": "上表面剪裁草图",
+          "points": [[-60, 0], [60, 0]]
+        }
+      },
+      {
+        "id": "待剪裁水平线约束",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "profile_segment",
+            "profile": "待剪裁水平中心线",
+            "index": 0
+          },
+          "relation": "horizontal"
+        }
+      },
+      {
+        "id": "待剪裁水平线过中心",
+        "type": "add_relation",
+        "parameters": {
+          "entities": [
+            {
+              "type": "point",
+              "id": "剪裁草图中心点"
+            },
+            {
+              "type": "profile_segment",
+              "profile": "待剪裁水平中心线",
+              "index": 0
+            }
+          ],
+          "relation": "coincident"
+        }
+      },
+      {
+        "id": "剪裁_去除右侧越界线段",
+        "type": "trim_entities",
+        "parameters": {
+          "sketch": "上表面剪裁草图",
+          "mode": "entity_point",
+          "entities": [
+            {
+              "type": "profile_segment",
+              "profile": "待剪裁水平中心线",
+              "index": 0
+            }
+          ],
+          "trim_point": [55, 0]
+        }
+      },
+      {
+        "id": "完成_上表面剪裁草图",
+        "type": "finish_sketch",
+        "parameters": {
+          "sketch": "上表面剪裁草图"
+        }
+      }
+    ]
+  }
+}

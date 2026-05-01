@@ -1,0 +1,142 @@
+{
+  "job_id": "中文旋转轴测试-001",
+  "kind": "primitive_part",
+  "backend": "auto",
+  "units": "mm",
+  "part": {
+    "name": "中文旋转圆柱测试件",
+    "source_kind": "manual_primitive_revolve",
+    "material": "45钢",
+    "export_formats": [
+      "pdf",
+      "svg",
+      "step"
+    ],
+    "operations": [
+      {
+        "id": "开始_旋转草图",
+        "type": "start_sketch",
+        "parameters": {
+          "sketch": "旋转草图",
+          "plane": "base"
+        }
+      },
+      {
+        "id": "旋转截面",
+        "type": "add_polyline",
+        "parameters": {
+          "sketch": "旋转草图",
+          "points": [
+            [0, 0],
+            [0, 20],
+            [50, 20],
+            [50, 0]
+          ],
+          "closed": true
+        }
+      },
+      {
+        "id": "旋转截面中心点",
+        "type": "add_point",
+        "parameters": {
+          "sketch": "旋转草图",
+          "point": [25, 10]
+        }
+      },
+      {
+        "id": "旋转截面水平垂直约束",
+        "type": "add_axis_constraints",
+        "parameters": {
+          "profile": "旋转截面"
+        }
+      },
+      {
+        "id": "旋转截面中心点固定",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "point",
+            "id": "旋转截面中心点"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "旋转截面尺寸",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "圆柱长度",
+              "type": "entity",
+              "entity": {
+                "type": "profile_segment",
+                "profile": "旋转截面",
+                "index": 1
+              },
+              "position": [25, 28]
+            },
+            {
+              "id": "圆柱半径",
+              "type": "entity",
+              "entity": {
+                "type": "profile_segment",
+                "profile": "旋转截面",
+                "index": 0
+              },
+              "position": [-12, 10]
+            },
+            {
+              "id": "中心到左边",
+              "type": "horizontal_between",
+              "first": {
+                "type": "point",
+                "id": "旋转截面中心点"
+              },
+              "second": {
+                "type": "profile_segment",
+                "profile": "旋转截面",
+                "index": 0
+              },
+              "position": [10, 15]
+            },
+            {
+              "id": "中心到底边",
+              "type": "vertical_between",
+              "first": {
+                "type": "point",
+                "id": "旋转截面中心点"
+              },
+              "second": {
+                "type": "profile_segment",
+                "profile": "旋转截面",
+                "index": 3
+              },
+              "position": [34, 5]
+            }
+          ]
+        }
+      },
+      {
+        "id": "检查_旋转草图完全定义",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "旋转草图"
+        }
+      },
+      {
+        "id": "旋转_圆柱成型",
+        "type": "revolve",
+        "parameters": {
+          "sketch": "旋转草图",
+          "axis": {
+            "type": "profile_segment",
+            "profile": "旋转截面",
+            "index": 3
+          },
+          "angle": 360
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,29 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.conda/
+
+mcp-server/tests/.tmp/
+outputs/jobs/*
+!outputs/jobs/.gitkeep
+
+# Local SolidWorks templates and generated CAD artifacts are not safe defaults
+# for a public repository. Keep templates local unless explicitly approved.
+mcp-server/SW模板/
+*.SLDPRT
+*.SLDASM
+*.SLDDRW
+*.STEP
+*.STP
+*.STL
+*.DXF
+*.PDF
+*.sldprt
+*.sldasm
+*.slddrw
+*.step
+*.stp
+*.stl
+*.dxf
+*.pdf

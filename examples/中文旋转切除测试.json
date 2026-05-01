@@ -1,0 +1,266 @@
+{
+  "job_id": "中文旋转切除测试-001",
+  "kind": "primitive_part",
+  "backend": "auto",
+  "units": "mm",
+  "part": {
+    "name": "中文旋转切除中心孔测试件",
+    "source_kind": "manual_primitive_cut_revolve",
+    "material": "45钢",
+    "export_formats": [
+      "pdf",
+      "svg",
+      "step"
+    ],
+    "operations": [
+      {
+        "id": "开始_外圆旋转草图",
+        "type": "start_sketch",
+        "parameters": {
+          "sketch": "外圆旋转草图",
+          "plane": "front"
+        }
+      },
+      {
+        "id": "外圆旋转截面",
+        "type": "add_polyline",
+        "parameters": {
+          "sketch": "外圆旋转草图",
+          "points": [
+            [0, 0],
+            [0, 20],
+            [60, 20],
+            [60, 0]
+          ],
+          "closed": true
+        }
+      },
+      {
+        "id": "外圆截面中心点",
+        "type": "add_point",
+        "parameters": {
+          "sketch": "外圆旋转草图",
+          "point": [30, 10]
+        }
+      },
+      {
+        "id": "外圆截面水平垂直约束",
+        "type": "add_axis_constraints",
+        "parameters": {
+          "profile": "外圆旋转截面"
+        }
+      },
+      {
+        "id": "外圆截面中心点固定",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "point",
+            "id": "外圆截面中心点"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "外圆截面尺寸",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "外圆长度",
+              "type": "entity",
+              "entity": {
+                "type": "profile_segment",
+                "profile": "外圆旋转截面",
+                "index": 1
+              },
+              "position": [30, 28]
+            },
+            {
+              "id": "外圆半径",
+              "type": "entity",
+              "entity": {
+                "type": "profile_segment",
+                "profile": "外圆旋转截面",
+                "index": 0
+              },
+              "position": [-12, 10]
+            },
+            {
+              "id": "外圆中心到左边",
+              "type": "horizontal_between",
+              "first": {
+                "type": "point",
+                "id": "外圆截面中心点"
+              },
+              "second": {
+                "type": "profile_segment",
+                "profile": "外圆旋转截面",
+                "index": 0
+              },
+              "position": [12, 15]
+            },
+            {
+              "id": "外圆中心到底边",
+              "type": "vertical_between",
+              "first": {
+                "type": "point",
+                "id": "外圆截面中心点"
+              },
+              "second": {
+                "type": "profile_segment",
+                "profile": "外圆旋转截面",
+                "index": 3
+              },
+              "position": [40, 5]
+            }
+          ]
+        }
+      },
+      {
+        "id": "检查_外圆旋转草图完全定义",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "外圆旋转草图"
+        }
+      },
+      {
+        "id": "旋转_外圆成型",
+        "type": "revolve",
+        "parameters": {
+          "sketch": "外圆旋转草图",
+          "axis": {
+            "type": "profile_segment",
+            "profile": "外圆旋转截面",
+            "index": 3
+          },
+          "angle": 360
+        }
+      },
+      {
+        "id": "开始_中心孔旋转切除草图",
+        "type": "start_sketch",
+        "parameters": {
+          "sketch": "中心孔旋转切除草图",
+          "plane": "front"
+        }
+      },
+      {
+        "id": "中心孔切除截面",
+        "type": "add_polyline",
+        "parameters": {
+          "sketch": "中心孔旋转切除草图",
+          "points": [
+            [0, 0],
+            [0, 6],
+            [60, 6],
+            [60, 0]
+          ],
+          "closed": true
+        }
+      },
+      {
+        "id": "中心孔截面定位点",
+        "type": "add_point",
+        "parameters": {
+          "sketch": "中心孔旋转切除草图",
+          "point": [30, 3]
+        }
+      },
+      {
+        "id": "中心孔截面水平垂直约束",
+        "type": "add_axis_constraints",
+        "parameters": {
+          "profile": "中心孔切除截面"
+        }
+      },
+      {
+        "id": "中心孔定位点固定",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "point",
+            "id": "中心孔截面定位点"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "中心孔切除尺寸",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "中心孔长度",
+              "type": "entity",
+              "entity": {
+                "type": "profile_segment",
+                "profile": "中心孔切除截面",
+                "index": 1
+              },
+              "position": [30, 12]
+            },
+            {
+              "id": "中心孔半径",
+              "type": "entity",
+              "entity": {
+                "type": "profile_segment",
+                "profile": "中心孔切除截面",
+                "index": 0
+              },
+              "position": [-10, 3]
+            },
+            {
+              "id": "中心孔定位点到左边",
+              "type": "horizontal_between",
+              "first": {
+                "type": "point",
+                "id": "中心孔截面定位点"
+              },
+              "second": {
+                "type": "profile_segment",
+                "profile": "中心孔切除截面",
+                "index": 0
+              },
+              "position": [15, 9]
+            },
+            {
+              "id": "中心孔定位点到底边",
+              "type": "vertical_between",
+              "first": {
+                "type": "point",
+                "id": "中心孔截面定位点"
+              },
+              "second": {
+                "type": "profile_segment",
+                "profile": "中心孔切除截面",
+                "index": 3
+              },
+              "position": [42, 2]
+            }
+          ]
+        }
+      },
+      {
+        "id": "检查_中心孔旋转切除草图完全定义",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "中心孔旋转切除草图"
+        }
+      },
+      {
+        "id": "旋转切除_中心孔",
+        "type": "cut_revolve",
+        "parameters": {
+          "sketch": "中心孔旋转切除草图",
+          "axis": {
+            "type": "profile_segment",
+            "profile": "中心孔切除截面",
+            "index": 3
+          },
+          "angle": 360
+        }
+      }
+    ]
+  }
+}

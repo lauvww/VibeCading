@@ -1,0 +1,406 @@
+{
+  "job_id": "中文槽口多边形样条测试-001",
+  "kind": "primitive_part",
+  "units": "mm",
+  "part": {
+    "name": "中文槽口多边形样条测试件",
+    "source_kind": "manual_primitive_slot_polygon_spline",
+    "export_formats": ["pdf", "svg", "step"],
+    "operations": [
+      {
+        "id": "开始_基板草图",
+        "type": "start_sketch",
+        "parameters": {
+          "sketch": "基板草图",
+          "plane": "前视基准面"
+        }
+      },
+      {
+        "id": "基板轮廓",
+        "type": "add_center_rectangle",
+        "parameters": {
+          "sketch": "基板草图",
+          "center": [0, 0],
+          "size": [120, 70]
+        }
+      },
+      {
+        "id": "基板中心点",
+        "type": "add_point",
+        "parameters": {
+          "sketch": "基板草图",
+          "point": [0, 0]
+        }
+      },
+      {
+        "id": "基板水平垂直约束",
+        "type": "add_axis_constraints",
+        "parameters": {
+          "profile": "基板轮廓"
+        }
+      },
+      {
+        "id": "基板中心固定",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "point",
+            "id": "基板中心点"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "基板尺寸",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "基板长度",
+              "type": "entity",
+              "entity": {
+                "type": "profile_edge",
+                "profile": "基板轮廓",
+                "edge": "bottom"
+              },
+              "position": [0, -47]
+            },
+            {
+              "id": "基板宽度",
+              "type": "entity",
+              "entity": {
+                "type": "profile_edge",
+                "profile": "基板轮廓",
+                "edge": "left"
+              },
+              "position": [-72, 0]
+            },
+            {
+              "id": "基板X居中",
+              "type": "horizontal_between",
+              "first": {
+                "type": "point",
+                "id": "基板中心点"
+              },
+              "second": {
+                "type": "profile_edge",
+                "profile": "基板轮廓",
+                "edge": "left"
+              },
+              "position": [-30, 12]
+            },
+            {
+              "id": "基板Y居中",
+              "type": "vertical_between",
+              "first": {
+                "type": "point",
+                "id": "基板中心点"
+              },
+              "second": {
+                "type": "profile_edge",
+                "profile": "基板轮廓",
+                "edge": "bottom"
+              },
+              "position": [12, -18]
+            }
+          ]
+        }
+      },
+      {
+        "id": "检查_基板草图完全定义",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "基板草图"
+        }
+      },
+      {
+        "id": "拉伸_基板",
+        "type": "extrude",
+        "parameters": {
+          "sketch": "基板草图",
+          "depth": 8
+        }
+      },
+      {
+        "id": "开始_槽口多边形切除草图",
+        "type": "start_sketch_on_face",
+        "parameters": {
+          "sketch": "槽口多边形切除草图",
+          "target": {
+            "type": "body_face",
+            "feature": "拉伸_基板",
+            "normal": [0, 0, 1],
+            "position": "max",
+            "area": "largest",
+            "area_rank": 0
+          }
+        }
+      },
+      {
+        "id": "直槽口",
+        "type": "add_straight_slot",
+        "parameters": {
+          "sketch": "槽口多边形切除草图",
+          "center": [-32, 0],
+          "length": 38,
+          "width": 10,
+          "angle": 0,
+          "definition_mode": "dimensioned_geometry",
+          "fully_define": true
+        }
+      },
+      {
+        "id": "六边形孔",
+        "type": "add_polygon",
+        "parameters": {
+          "sketch": "槽口多边形切除草图",
+          "center": [28, 0],
+          "radius": 12,
+          "sides": 6,
+          "angle": 30,
+          "inscribed": false,
+          "fully_define": true
+        }
+      },
+      {
+        "id": "检查_槽口多边形切除草图完全定义",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "槽口多边形切除草图"
+        }
+      },
+      {
+        "id": "切除_槽口和六边形",
+        "type": "cut_extrude",
+        "parameters": {
+          "sketch": "槽口多边形切除草图",
+          "depth": 10,
+          "reverse_direction": false
+        }
+      },
+      {
+        "id": "开始_样条曲线草图",
+        "type": "start_sketch_on_face",
+        "parameters": {
+          "sketch": "样条曲线草图",
+          "target": {
+            "type": "body_face",
+            "normal": [0, 0, 1],
+            "position": "max",
+            "area": "largest",
+            "area_rank": 0
+          }
+        }
+      },
+      {
+        "id": "样条草图原点",
+        "type": "add_point",
+        "parameters": {
+          "sketch": "样条曲线草图",
+          "point": [0, 0]
+        }
+      },
+      {
+        "id": "样条草图原点固定",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "point",
+            "id": "样条草图原点"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "开放样条曲线",
+        "type": "add_spline",
+        "parameters": {
+          "sketch": "样条曲线草图",
+          "points": [[-48, 22], [-28, 30], [0, 20], [28, 30], [48, 22]],
+          "closed": false,
+          "create_fit_point_refs": true
+        }
+      },
+      {
+        "id": "样条中点竖直对齐",
+        "type": "add_relation",
+        "parameters": {
+          "entities": [
+            {
+              "type": "point",
+              "id": "样条草图原点"
+            },
+            {
+              "type": "spline_point",
+              "spline": "开放样条曲线",
+              "index": 2
+            }
+          ],
+          "relation": "vertical"
+        }
+      },
+      {
+        "id": "样条拟合点尺寸",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "样条点0_X",
+              "type": "horizontal_between",
+              "first": {
+                "type": "point",
+                "id": "样条草图原点"
+              },
+              "second": {
+                "type": "spline_point",
+                "spline": "开放样条曲线",
+                "index": 0
+              },
+              "position": [-24, 16]
+            },
+            {
+              "id": "样条点0_Y",
+              "type": "vertical_between",
+              "first": {
+                "type": "point",
+                "id": "样条草图原点"
+              },
+              "second": {
+                "type": "spline_point",
+                "spline": "开放样条曲线",
+                "index": 0
+              },
+              "position": [-56, 11]
+            },
+            {
+              "id": "样条点1_X",
+              "type": "horizontal_between",
+              "first": {
+                "type": "point",
+                "id": "样条草图原点"
+              },
+              "second": {
+                "type": "spline_point",
+                "spline": "开放样条曲线",
+                "index": 1
+              },
+              "position": [-14, 34]
+            },
+            {
+              "id": "样条点1_Y",
+              "type": "vertical_between",
+              "first": {
+                "type": "point",
+                "id": "样条草图原点"
+              },
+              "second": {
+                "type": "spline_point",
+                "spline": "开放样条曲线",
+                "index": 1
+              },
+              "position": [-34, 15]
+            },
+            {
+              "id": "样条点2_Y",
+              "type": "vertical_between",
+              "first": {
+                "type": "point",
+                "id": "样条草图原点"
+              },
+              "second": {
+                "type": "spline_point",
+                "spline": "开放样条曲线",
+                "index": 2
+              },
+              "position": [6, 10]
+            },
+            {
+              "id": "样条点3_X",
+              "type": "horizontal_between",
+              "first": {
+                "type": "point",
+                "id": "样条草图原点"
+              },
+              "second": {
+                "type": "spline_point",
+                "spline": "开放样条曲线",
+                "index": 3
+              },
+              "position": [14, 34]
+            },
+            {
+              "id": "样条点3_Y",
+              "type": "vertical_between",
+              "first": {
+                "type": "point",
+                "id": "样条草图原点"
+              },
+              "second": {
+                "type": "spline_point",
+                "spline": "开放样条曲线",
+                "index": 3
+              },
+              "position": [34, 15]
+            },
+            {
+              "id": "样条点4_X",
+              "type": "horizontal_between",
+              "first": {
+                "type": "point",
+                "id": "样条草图原点"
+              },
+              "second": {
+                "type": "spline_point",
+                "spline": "开放样条曲线",
+                "index": 4
+              },
+              "position": [24, 16]
+            },
+            {
+              "id": "样条点4_Y",
+              "type": "vertical_between",
+              "first": {
+                "type": "point",
+                "id": "样条草图原点"
+              },
+              "second": {
+                "type": "spline_point",
+                "spline": "开放样条曲线",
+                "index": 4
+              },
+              "position": [56, 11]
+            }
+          ]
+        }
+      },
+      {
+        "id": "补全_样条残余自由度",
+        "type": "fully_define_sketch",
+        "parameters": {
+          "sketch": "样条曲线草图",
+          "datum": {
+            "type": "point",
+            "id": "样条草图原点"
+          },
+          "apply_relations": true,
+          "relation_mask": 1023,
+          "apply_dimensions": true
+        }
+      },
+      {
+        "id": "检查_样条曲线草图完全定义",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "样条曲线草图"
+        }
+      },
+      {
+        "id": "完成_样条曲线草图",
+        "type": "finish_sketch",
+        "parameters": {
+          "sketch": "样条曲线草图"
+        }
+      }
+    ]
+  }
+}

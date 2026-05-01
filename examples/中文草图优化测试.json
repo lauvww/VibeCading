@@ -1,0 +1,683 @@
+{
+  "job_id": "中文草图优化测试-001",
+  "kind": "primitive_part",
+  "backend": "auto",
+  "units": "mm",
+  "part": {
+    "name": "中文草图优化测试件",
+    "source_kind": "manual_primitive_sketch_optimized",
+    "material": "6061-T6 铝合金",
+    "export_formats": [
+      "pdf",
+      "svg",
+      "step"
+    ],
+    "operations": [
+      {
+        "id": "开始_圆角底板草图",
+        "type": "start_sketch",
+        "parameters": {
+          "sketch": "圆角底板草图",
+          "plane": "front"
+        }
+      },
+      {
+        "id": "圆角底板矩形轮廓",
+        "type": "add_center_rectangle",
+        "parameters": {
+          "sketch": "圆角底板草图",
+          "center": [0, 0],
+          "size": [100, 60]
+        }
+      },
+      {
+        "id": "圆角底板中心点",
+        "type": "add_point",
+        "parameters": {
+          "sketch": "圆角底板草图",
+          "point": [0, 0]
+        }
+      },
+      {
+        "id": "圆角底板水平垂直约束",
+        "type": "add_axis_constraints",
+        "parameters": {
+          "profile": "圆角底板矩形轮廓"
+        }
+      },
+      {
+        "id": "圆角底板中心固定",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "point",
+            "id": "圆角底板中心点"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "圆角底板尺寸",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "圆角底板长度",
+              "type": "entity",
+              "entity": {
+                "type": "profile_edge",
+                "profile": "圆角底板矩形轮廓",
+                "edge": "bottom"
+              },
+              "position": [0, -38]
+            },
+            {
+              "id": "圆角底板宽度",
+              "type": "entity",
+              "entity": {
+                "type": "profile_edge",
+                "profile": "圆角底板矩形轮廓",
+                "edge": "left"
+              },
+              "position": [-62, 0]
+            },
+            {
+              "id": "圆角底板中心到左边",
+              "type": "horizontal_between",
+              "first": {
+                "type": "point",
+                "id": "圆角底板中心点"
+              },
+              "second": {
+                "type": "profile_edge",
+                "profile": "圆角底板矩形轮廓",
+                "edge": "left"
+              },
+              "position": [-24, 14]
+            },
+            {
+              "id": "圆角底板中心到底边",
+              "type": "vertical_between",
+              "first": {
+                "type": "point",
+                "id": "圆角底板中心点"
+              },
+              "second": {
+                "type": "profile_edge",
+                "profile": "圆角底板矩形轮廓",
+                "edge": "bottom"
+              },
+              "position": [12, -18]
+            }
+          ]
+        }
+      },
+      {
+        "id": "草图圆角_右下角",
+        "type": "sketch_fillet",
+        "parameters": {
+          "sketch": "圆角底板草图",
+          "entities": [
+            {
+              "type": "profile_edge",
+              "profile": "圆角底板矩形轮廓",
+              "edge": "bottom"
+            },
+            {
+              "type": "profile_edge",
+              "profile": "圆角底板矩形轮廓",
+              "edge": "right"
+            }
+          ],
+          "radius": 8,
+          "constrained_corner_action": "keep_geometry"
+        }
+      },
+      {
+        "id": "草图圆角_右上角",
+        "type": "sketch_fillet",
+        "parameters": {
+          "sketch": "圆角底板草图",
+          "entities": [
+            {
+              "type": "profile_edge",
+              "profile": "圆角底板矩形轮廓",
+              "edge": "right"
+            },
+            {
+              "type": "profile_edge",
+              "profile": "圆角底板矩形轮廓",
+              "edge": "top"
+            }
+          ],
+          "radius": 8,
+          "constrained_corner_action": "keep_geometry"
+        }
+      },
+      {
+        "id": "草图圆角_左上角",
+        "type": "sketch_fillet",
+        "parameters": {
+          "sketch": "圆角底板草图",
+          "entities": [
+            {
+              "type": "profile_edge",
+              "profile": "圆角底板矩形轮廓",
+              "edge": "top"
+            },
+            {
+              "type": "profile_edge",
+              "profile": "圆角底板矩形轮廓",
+              "edge": "left"
+            }
+          ],
+          "radius": 8,
+          "constrained_corner_action": "keep_geometry"
+        }
+      },
+      {
+        "id": "草图圆角_左下角",
+        "type": "sketch_fillet",
+        "parameters": {
+          "sketch": "圆角底板草图",
+          "entities": [
+            {
+              "type": "profile_edge",
+              "profile": "圆角底板矩形轮廓",
+              "edge": "left"
+            },
+            {
+              "type": "profile_edge",
+              "profile": "圆角底板矩形轮廓",
+              "edge": "bottom"
+            }
+          ],
+          "radius": 8,
+          "constrained_corner_action": "keep_geometry"
+        }
+      },
+      {
+        "id": "检查_圆角底板草图完全定义",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "圆角底板草图"
+        }
+      },
+      {
+        "id": "拉伸_圆角底板",
+        "type": "extrude",
+        "parameters": {
+          "sketch": "圆角底板草图",
+          "depth": 10
+        }
+      },
+      {
+        "id": "开始_顶面草图优化切除",
+        "type": "start_sketch_on_face",
+        "parameters": {
+          "sketch": "倒角窗口草图",
+          "target": {
+            "type": "body_face",
+            "feature": "拉伸_圆角底板",
+            "normal": [0, 0, 1],
+            "position": "max",
+            "area": "largest",
+            "area_rank": 0
+          }
+        }
+      },
+      {
+        "id": "倒角窗口基础矩形",
+        "type": "add_center_rectangle",
+        "parameters": {
+          "sketch": "倒角窗口草图",
+          "center": [0, 0],
+          "size": [28, 16]
+        }
+      },
+      {
+        "id": "倒角窗口中心点",
+        "type": "add_point",
+        "parameters": {
+          "sketch": "倒角窗口草图",
+          "point": [0, 0]
+        }
+      },
+      {
+        "id": "倒角窗口水平垂直约束",
+        "type": "add_axis_constraints",
+        "parameters": {
+          "profile": "倒角窗口基础矩形"
+        }
+      },
+      {
+        "id": "倒角窗口中心固定",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "point",
+            "id": "倒角窗口中心点"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "倒角窗口基础尺寸",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "倒角窗口宽度",
+              "type": "entity",
+              "entity": {
+                "type": "profile_edge",
+                "profile": "倒角窗口基础矩形",
+                "edge": "bottom"
+              },
+              "position": [0, -14]
+            },
+            {
+              "id": "倒角窗口高度",
+              "type": "entity",
+              "entity": {
+                "type": "profile_edge",
+                "profile": "倒角窗口基础矩形",
+                "edge": "left"
+              },
+              "position": [-20, 0]
+            },
+            {
+              "id": "倒角窗口X居中",
+              "type": "horizontal_between",
+              "first": {
+                "type": "point",
+                "id": "倒角窗口中心点"
+              },
+              "second": {
+                "type": "profile_edge",
+                "profile": "倒角窗口基础矩形",
+                "edge": "left"
+              },
+              "position": [-7, 5]
+            },
+            {
+              "id": "倒角窗口Y居中",
+              "type": "vertical_between",
+              "first": {
+                "type": "point",
+                "id": "倒角窗口中心点"
+              },
+              "second": {
+                "type": "profile_edge",
+                "profile": "倒角窗口基础矩形",
+                "edge": "bottom"
+              },
+              "position": [5, -4]
+            }
+          ]
+        }
+      },
+      {
+        "id": "草图倒角_右下角",
+        "type": "sketch_chamfer",
+        "parameters": {
+          "sketch": "倒角窗口草图",
+          "entities": [
+            {
+              "type": "profile_edge",
+              "profile": "倒角窗口基础矩形",
+              "edge": "right"
+            },
+            {
+              "type": "profile_edge",
+              "profile": "倒角窗口基础矩形",
+              "edge": "bottom"
+            }
+          ],
+          "distance": 3,
+          "chamfer_type": "distance_equal"
+        }
+      },
+      {
+        "id": "草图倒角_右上角",
+        "type": "sketch_chamfer",
+        "parameters": {
+          "sketch": "倒角窗口草图",
+          "entities": [
+            {
+              "type": "profile_edge",
+              "profile": "倒角窗口基础矩形",
+              "edge": "right"
+            },
+            {
+              "type": "profile_edge",
+              "profile": "倒角窗口基础矩形",
+              "edge": "top"
+            }
+          ],
+          "distance": 3,
+          "chamfer_type": "distance_equal"
+        }
+      },
+      {
+        "id": "草图倒角_左上角",
+        "type": "sketch_chamfer",
+        "parameters": {
+          "sketch": "倒角窗口草图",
+          "entities": [
+            {
+              "type": "profile_edge",
+              "profile": "倒角窗口基础矩形",
+              "edge": "top"
+            },
+            {
+              "type": "profile_edge",
+              "profile": "倒角窗口基础矩形",
+              "edge": "left"
+            }
+          ],
+          "distance": 3,
+          "chamfer_type": "distance_equal"
+        }
+      },
+      {
+        "id": "草图倒角_左下角",
+        "type": "sketch_chamfer",
+        "parameters": {
+          "sketch": "倒角窗口草图",
+          "entities": [
+            {
+              "type": "profile_edge",
+              "profile": "倒角窗口基础矩形",
+              "edge": "left"
+            },
+            {
+              "type": "profile_edge",
+              "profile": "倒角窗口基础矩形",
+              "edge": "bottom"
+            }
+          ],
+          "distance": 3,
+          "chamfer_type": "distance_equal"
+        }
+      },
+      {
+        "id": "检查_倒角窗口草图完全定义",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "倒角窗口草图"
+        }
+      },
+      {
+        "id": "切除_倒角窗口",
+        "type": "cut_extrude",
+        "parameters": {
+          "sketch": "倒角窗口草图",
+          "depth": 12,
+          "reverse_direction": false
+        }
+      },
+      {
+        "id": "开始_镜像阵列孔草图",
+        "type": "start_sketch_on_face",
+        "parameters": {
+          "sketch": "镜像阵列孔草图",
+          "target": {
+            "type": "body_face",
+            "normal": [0, 0, 1],
+            "position": "max",
+            "area": "largest",
+            "area_rank": 0
+          }
+        }
+      },
+      {
+        "id": "孔草图原点",
+        "type": "add_point",
+        "parameters": {
+          "sketch": "镜像阵列孔草图",
+          "point": [0, 0]
+        }
+      },
+      {
+        "id": "孔草图原点固定",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "point",
+            "id": "孔草图原点"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "孔中心镜像线",
+        "type": "add_centerline",
+        "parameters": {
+          "sketch": "镜像阵列孔草图",
+          "start": [0, -28],
+          "end": [0, 28]
+        }
+      },
+      {
+        "id": "孔中心镜像线竖直",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "centerline",
+            "id": "孔中心镜像线"
+          },
+          "relation": "vertical"
+        }
+      },
+      {
+        "id": "孔中心镜像线过原点",
+        "type": "add_relation",
+        "parameters": {
+          "entities": [
+            {
+              "type": "point",
+              "id": "孔草图原点"
+            },
+            {
+              "type": "centerline",
+              "id": "孔中心镜像线"
+            }
+          ],
+          "relation": "coincident"
+        }
+      },
+      {
+        "id": "孔中心镜像线尺寸定位",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "镜像线上端到原点距离",
+              "type": "vertical_between",
+              "first": {
+                "type": "point",
+                "id": "孔草图原点"
+              },
+              "second": {
+                "type": "centerline_point",
+                "id": "孔中心镜像线",
+                "point": "end"
+              },
+              "position": [-8, 14]
+            },
+            {
+              "id": "镜像线下端到原点距离",
+              "type": "vertical_between",
+              "first": {
+                "type": "point",
+                "id": "孔草图原点"
+              },
+              "second": {
+                "type": "centerline_point",
+                "id": "孔中心镜像线",
+                "point": "start"
+              },
+              "position": [-8, -14]
+            }
+          ]
+        }
+      },
+      {
+        "id": "右上镜像定位孔",
+        "type": "add_mirrored_circle",
+        "parameters": {
+          "sketch": "镜像阵列孔草图",
+          "center": [34, 18],
+          "diameter": 7,
+          "axis": {
+            "type": "centerline",
+            "id": "孔中心镜像线",
+            "orientation": "vertical",
+            "offset": 0
+          }
+        }
+      },
+      {
+        "id": "右侧定位孔线性阵列",
+        "type": "add_circle_linear_pattern",
+        "parameters": {
+          "sketch": "镜像阵列孔草图",
+          "source": "右上镜像定位孔",
+          "count": 3,
+          "spacing": [0, -18],
+          "fix_copies": false
+        }
+      },
+      {
+        "id": "右上孔尺寸定位",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "右上孔直径",
+              "type": "entity",
+              "entity": {
+                "type": "circle",
+                "id": "右上镜像定位孔"
+              },
+              "position": [42, 26]
+            },
+            {
+              "id": "右上孔X定位",
+              "type": "horizontal_between",
+              "first": {
+                "type": "point",
+                "id": "孔草图原点"
+              },
+              "second": {
+                "type": "circle_center",
+                "circle": "右上镜像定位孔"
+              },
+              "position": [17, 25]
+            },
+            {
+              "id": "右上孔Y定位",
+              "type": "vertical_between",
+              "first": {
+                "type": "point",
+                "id": "孔草图原点"
+              },
+              "second": {
+                "type": "circle_center",
+                "circle": "右上镜像定位孔"
+              },
+              "position": [42, 9]
+            },
+            {
+              "id": "右侧中孔X定位",
+              "type": "horizontal_between",
+              "first": {
+                "type": "point",
+                "id": "孔草图原点"
+              },
+              "second": {
+                "type": "circle_center",
+                "circle": "右侧定位孔线性阵列_1"
+              },
+              "position": [17, 5]
+            },
+            {
+              "id": "右侧下孔X定位",
+              "type": "horizontal_between",
+              "first": {
+                "type": "point",
+                "id": "孔草图原点"
+              },
+              "second": {
+                "type": "circle_center",
+                "circle": "右侧定位孔线性阵列_2"
+              },
+              "position": [17, -13]
+            },
+            {
+              "id": "右侧中孔直径",
+              "type": "entity",
+              "entity": {
+                "type": "circle",
+                "id": "右侧定位孔线性阵列_1"
+              },
+              "position": [42, 8]
+            },
+            {
+              "id": "右侧下孔直径",
+              "type": "entity",
+              "entity": {
+                "type": "circle",
+                "id": "右侧定位孔线性阵列_2"
+              },
+              "position": [42, -10]
+            },
+            {
+              "id": "右上孔到右中孔间距",
+              "type": "vertical_between",
+              "first": {
+                "type": "circle_center",
+                "circle": "右上镜像定位孔"
+              },
+              "second": {
+                "type": "circle_center",
+                "circle": "右侧定位孔线性阵列_1"
+              },
+              "position": [50, 9]
+            },
+            {
+              "id": "右中孔到右下孔间距",
+              "type": "vertical_between",
+              "first": {
+                "type": "circle_center",
+                "circle": "右侧定位孔线性阵列_1"
+              },
+              "second": {
+                "type": "circle_center",
+                "circle": "右侧定位孔线性阵列_2"
+              },
+              "position": [50, -9]
+            }
+          ]
+        }
+      },
+      {
+        "id": "检查_镜像阵列孔草图完全定义",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "镜像阵列孔草图"
+        }
+      },
+      {
+        "id": "切除_镜像阵列孔",
+        "type": "cut_extrude",
+        "parameters": {
+          "sketch": "镜像阵列孔草图",
+          "depth": 12,
+          "reverse_direction": false
+        }
+      }
+    ]
+  }
+}

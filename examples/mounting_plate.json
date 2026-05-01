@@ -1,0 +1,46 @@
+{
+  "job_id": "demo-mounting-plate-001",
+  "kind": "mounting_plate",
+  "backend": "auto",
+  "units": "mm",
+  "part": {
+    "name": "mounting_plate_demo",
+    "length": 120,
+    "width": 80,
+    "thickness": 8,
+    "corner_radius": 4,
+    "material": "6061-T6 aluminum",
+    "holes": [
+      {
+        "x": 20,
+        "y": 20,
+        "diameter": 8,
+        "label": "M8 clearance"
+      },
+      {
+        "x": 100,
+        "y": 20,
+        "diameter": 8,
+        "label": "M8 clearance"
+      },
+      {
+        "x": 20,
+        "y": 60,
+        "diameter": 8,
+        "label": "M8 clearance"
+      },
+      {
+        "x": 100,
+        "y": 60,
+        "diameter": 8,
+        "label": "M8 clearance"
+      }
+    ],
+    "export_formats": [
+      "pdf",
+      "svg",
+      "step"
+    ]
+  }
+}
+

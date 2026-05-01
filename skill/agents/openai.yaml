@@ -1,0 +1,4 @@
+interface:
+  display_name: "VibeCading CAD Agent"
+  short_description: "Build SolidWorks CAD jobs with constrained Primitive DSL."
+  default_prompt: "Use $vibecading-cad-agent to choose the simplest maintainable modeling strategy for a mechanical CAD request, turn it into constrained Primitive DSL, include face-derived sketch cleanup when needed, and run it through the local SolidWorks workflow."

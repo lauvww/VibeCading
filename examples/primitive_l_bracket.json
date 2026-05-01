@@ -1,0 +1,125 @@
+{
+  "job_id": "demo-primitive-l-bracket-001",
+  "kind": "primitive_part",
+  "backend": "auto",
+  "units": "mm",
+  "part": {
+    "name": "primitive_l_bracket_demo",
+    "source_kind": "manual_primitive",
+    "material": "Q235 steel",
+    "export_formats": [
+      "pdf",
+      "svg",
+      "step"
+    ],
+    "operations": [
+      {
+        "id": "start_main_l_profile_sketch",
+        "type": "start_sketch",
+        "parameters": {
+          "sketch": "main_l_profile_sketch",
+          "plane": "base"
+        }
+      },
+      {
+        "id": "main_l_profile",
+        "type": "add_polyline",
+        "parameters": {
+          "sketch": "main_l_profile_sketch",
+          "closed": true,
+          "points": [
+            [0, 0],
+            [120, 0],
+            [120, 10],
+            [10, 10],
+            [10, 90],
+            [0, 90]
+          ]
+        }
+      },
+      {
+        "id": "main_l_profile_axis_constraints",
+        "type": "add_axis_constraints",
+        "parameters": {
+          "profile": "main_l_profile"
+        }
+      },
+      {
+        "id": "main_l_profile_origin_fixed",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "profile_point",
+            "profile": "main_l_profile",
+            "index": 0,
+            "point": "start"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "main_l_profile_dimensions",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "base_length",
+              "type": "entity",
+              "entity": {
+                "type": "profile_segment",
+                "profile": "main_l_profile",
+                "index": 0
+              },
+              "position": [60, -12]
+            },
+            {
+              "id": "base_thickness",
+              "type": "entity",
+              "entity": {
+                "type": "profile_segment",
+                "profile": "main_l_profile",
+                "index": 1
+              },
+              "position": [132, 5]
+            },
+            {
+              "id": "wall_thickness",
+              "type": "entity",
+              "entity": {
+                "type": "profile_segment",
+                "profile": "main_l_profile",
+                "index": 4
+              },
+              "position": [5, 102]
+            },
+            {
+              "id": "height",
+              "type": "entity",
+              "entity": {
+                "type": "profile_segment",
+                "profile": "main_l_profile",
+                "index": 5
+              },
+              "position": [-12, 45]
+            }
+          ]
+        }
+      },
+      {
+        "id": "validate_main_l_profile_sketch",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "main_l_profile_sketch"
+        }
+      },
+      {
+        "id": "extrude_main_l_profile",
+        "type": "extrude",
+        "parameters": {
+          "sketch": "main_l_profile_sketch",
+          "depth": 50
+        }
+      }
+    ]
+  }
+}

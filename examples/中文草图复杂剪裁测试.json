@@ -1,0 +1,446 @@
+{
+  "job_id": "中文草图复杂剪裁测试-001",
+  "kind": "primitive_part",
+  "units": "mm",
+  "part": {
+    "name": "中文草图复杂剪裁测试件",
+    "source_kind": "manual_primitive_sketch_complex_trim",
+    "material": "6061-T6 铝合金",
+    "export_formats": ["pdf", "svg", "step"],
+    "operations": [
+      {
+        "id": "开始_复杂剪裁基板草图",
+        "type": "start_sketch",
+        "parameters": {
+          "sketch": "复杂剪裁基板草图",
+          "plane": "front"
+        }
+      },
+      {
+        "id": "复杂剪裁基板轮廓",
+        "type": "add_center_rectangle",
+        "parameters": {
+          "sketch": "复杂剪裁基板草图",
+          "center": [0, 0],
+          "size": [120, 70]
+        }
+      },
+      {
+        "id": "复杂剪裁基板中心点",
+        "type": "add_point",
+        "parameters": {
+          "sketch": "复杂剪裁基板草图",
+          "point": [0, 0]
+        }
+      },
+      {
+        "id": "复杂剪裁基板水平垂直约束",
+        "type": "add_axis_constraints",
+        "parameters": {
+          "profile": "复杂剪裁基板轮廓"
+        }
+      },
+      {
+        "id": "复杂剪裁基板中心固定",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "point",
+            "id": "复杂剪裁基板中心点"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "复杂剪裁基板尺寸",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "复杂剪裁基板长度",
+              "type": "entity",
+              "entity": {
+                "type": "profile_edge",
+                "profile": "复杂剪裁基板轮廓",
+                "edge": "bottom"
+              },
+              "position": [0, -43]
+            },
+            {
+              "id": "复杂剪裁基板宽度",
+              "type": "entity",
+              "entity": {
+                "type": "profile_edge",
+                "profile": "复杂剪裁基板轮廓",
+                "edge": "left"
+              },
+              "position": [-72, 0]
+            },
+            {
+              "id": "复杂剪裁基板中心到左边",
+              "type": "horizontal_between",
+              "first": {
+                "type": "point",
+                "id": "复杂剪裁基板中心点"
+              },
+              "second": {
+                "type": "profile_edge",
+                "profile": "复杂剪裁基板轮廓",
+                "edge": "left"
+              },
+              "position": [-28, 18]
+            },
+            {
+              "id": "复杂剪裁基板中心到底边",
+              "type": "vertical_between",
+              "first": {
+                "type": "point",
+                "id": "复杂剪裁基板中心点"
+              },
+              "second": {
+                "type": "profile_edge",
+                "profile": "复杂剪裁基板轮廓",
+                "edge": "bottom"
+              },
+              "position": [16, -22]
+            }
+          ]
+        }
+      },
+      {
+        "id": "检查_复杂剪裁基板草图完全定义",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "复杂剪裁基板草图"
+        }
+      },
+      {
+        "id": "拉伸_复杂剪裁基板",
+        "type": "extrude",
+        "parameters": {
+          "sketch": "复杂剪裁基板草图",
+          "depth": 8
+        }
+      },
+      {
+        "id": "开始_边界内侧剪裁草图",
+        "type": "start_sketch_on_face",
+        "parameters": {
+          "sketch": "边界内侧剪裁草图",
+          "target": {
+            "type": "body_face",
+            "feature": "拉伸_复杂剪裁基板",
+            "normal": [0, 0, 1],
+            "position": "max",
+            "area": "largest",
+            "area_rank": 0
+          }
+        }
+      },
+      {
+        "id": "左侧剪裁边界",
+        "type": "add_polyline",
+        "parameters": {
+          "sketch": "边界内侧剪裁草图",
+          "points": [[-22, -28], [-22, 28]]
+        }
+      },
+      {
+        "id": "右侧剪裁边界",
+        "type": "add_polyline",
+        "parameters": {
+          "sketch": "边界内侧剪裁草图",
+          "points": [[22, -28], [22, 28]]
+        }
+      },
+      {
+        "id": "被内侧剪裁水平线",
+        "type": "add_polyline",
+        "parameters": {
+          "sketch": "边界内侧剪裁草图",
+          "points": [[-55, 0], [55, 0]]
+        }
+      },
+      {
+        "id": "左侧剪裁边界垂直",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "profile_segment",
+            "profile": "左侧剪裁边界",
+            "index": 0
+          },
+          "relation": "vertical"
+        }
+      },
+      {
+        "id": "右侧剪裁边界垂直",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "profile_segment",
+            "profile": "右侧剪裁边界",
+            "index": 0
+          },
+          "relation": "vertical"
+        }
+      },
+      {
+        "id": "被内侧剪裁水平线约束",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "profile_segment",
+            "profile": "被内侧剪裁水平线",
+            "index": 0
+          },
+          "relation": "horizontal"
+        }
+      },
+      {
+        "id": "剪裁_去除两边界内侧线段",
+        "type": "trim_entities",
+        "parameters": {
+          "sketch": "边界内侧剪裁草图",
+          "mode": "inside",
+          "boundary_entities": [
+            {
+              "type": "profile_segment",
+              "profile": "左侧剪裁边界",
+              "index": 0
+            },
+            {
+              "type": "profile_segment",
+              "profile": "右侧剪裁边界",
+              "index": 0
+            }
+          ],
+          "trim_targets": [
+            {
+              "type": "profile_segment",
+              "profile": "被内侧剪裁水平线",
+              "index": 0
+            }
+          ],
+          "boundary_pick_points": [[-22, 0], [22, 0]],
+          "trim_pick_points": [[0, 0]]
+        }
+      },
+      {
+        "id": "完成_边界内侧剪裁草图",
+        "type": "finish_sketch",
+        "parameters": {
+          "sketch": "边界内侧剪裁草图"
+        }
+      },
+      {
+        "id": "开始_边界外侧剪裁草图",
+        "type": "start_sketch_on_face",
+        "parameters": {
+          "sketch": "边界外侧剪裁草图",
+          "target": {
+            "type": "body_face",
+            "feature": "拉伸_复杂剪裁基板",
+            "normal": [0, 0, 1],
+            "position": "max",
+            "area": "largest",
+            "area_rank": 0
+          }
+        }
+      },
+      {
+        "id": "外侧左剪裁边界",
+        "type": "add_polyline",
+        "parameters": {
+          "sketch": "边界外侧剪裁草图",
+          "points": [[-28, -28], [-28, 28]]
+        }
+      },
+      {
+        "id": "外侧右剪裁边界",
+        "type": "add_polyline",
+        "parameters": {
+          "sketch": "边界外侧剪裁草图",
+          "points": [[28, -28], [28, 28]]
+        }
+      },
+      {
+        "id": "被外侧剪裁水平线",
+        "type": "add_polyline",
+        "parameters": {
+          "sketch": "边界外侧剪裁草图",
+          "points": [[-55, 12], [55, 12]]
+        }
+      },
+      {
+        "id": "外侧左剪裁边界垂直",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "profile_segment",
+            "profile": "外侧左剪裁边界",
+            "index": 0
+          },
+          "relation": "vertical"
+        }
+      },
+      {
+        "id": "外侧右剪裁边界垂直",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "profile_segment",
+            "profile": "外侧右剪裁边界",
+            "index": 0
+          },
+          "relation": "vertical"
+        }
+      },
+      {
+        "id": "被外侧剪裁水平线约束",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "profile_segment",
+            "profile": "被外侧剪裁水平线",
+            "index": 0
+          },
+          "relation": "horizontal"
+        }
+      },
+      {
+        "id": "剪裁_去除两边界外侧线段",
+        "type": "trim_entities",
+        "parameters": {
+          "sketch": "边界外侧剪裁草图",
+          "mode": "outside",
+          "boundary_entities": [
+            {
+              "type": "profile_segment",
+              "profile": "外侧左剪裁边界",
+              "index": 0
+            },
+            {
+              "type": "profile_segment",
+              "profile": "外侧右剪裁边界",
+              "index": 0
+            }
+          ],
+          "trim_targets": [
+            {
+              "type": "profile_segment",
+              "profile": "被外侧剪裁水平线",
+              "index": 0
+            }
+          ],
+          "boundary_pick_points": [[-28, 12], [28, 12]],
+          "trim_pick_points": [[-48, 12]]
+        }
+      },
+      {
+        "id": "完成_边界外侧剪裁草图",
+        "type": "finish_sketch",
+        "parameters": {
+          "sketch": "边界外侧剪裁草图"
+        }
+      },
+      {
+        "id": "开始_强力剪裁草图",
+        "type": "start_sketch_on_face",
+        "parameters": {
+          "sketch": "强力剪裁草图",
+          "target": {
+            "type": "body_face",
+            "feature": "拉伸_复杂剪裁基板",
+            "normal": [0, 0, 1],
+            "position": "max",
+            "area": "largest",
+            "area_rank": 0
+          }
+        }
+      },
+      {
+        "id": "转换_强力剪裁外轮廓",
+        "type": "convert_entities",
+        "parameters": {
+          "sketch": "强力剪裁草图",
+          "target": {
+            "type": "body_face_edges",
+            "feature": "拉伸_复杂剪裁基板",
+            "normal": [0, 0, 1],
+            "position": "max",
+            "area": "largest",
+            "area_rank": 0,
+            "loop": "outer"
+          },
+          "prefer_native": false,
+          "chain": false
+        }
+      },
+      {
+        "id": "待删除临时草图线",
+        "type": "add_polyline",
+        "parameters": {
+          "sketch": "强力剪裁草图",
+          "points": [[-12, -20], [12, -20]]
+        }
+      },
+      {
+        "id": "删除_临时草图线",
+        "type": "delete_entities",
+        "parameters": {
+          "sketch": "强力剪裁草图",
+          "entities": [
+            {
+              "type": "profile",
+              "id": "待删除临时草图线"
+            }
+          ]
+        }
+      },
+      {
+        "id": "强力剪裁水平越界线",
+        "type": "add_polyline",
+        "parameters": {
+          "sketch": "强力剪裁草图",
+          "points": [[-70, 14], [70, 14]]
+        }
+      },
+      {
+        "id": "强力剪裁水平线约束",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "profile_segment",
+            "profile": "强力剪裁水平越界线",
+            "index": 0
+          },
+          "relation": "horizontal"
+        }
+      },
+      {
+        "id": "强力剪裁_去除越界线段",
+        "type": "trim_entities",
+        "parameters": {
+          "sketch": "强力剪裁草图",
+          "mode": "power",
+          "trim_targets": [
+            {
+              "type": "profile_segment",
+              "profile": "强力剪裁水平越界线",
+              "index": 0
+            }
+          ],
+          "trim_pick_points": [[66, 14]]
+        }
+      },
+      {
+        "id": "完成_强力剪裁草图",
+        "type": "finish_sketch",
+        "parameters": {
+          "sketch": "强力剪裁草图"
+        }
+      }
+    ]
+  }
+}

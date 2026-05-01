@@ -1,0 +1,30 @@
+{
+  "job_id": "demo-l-bracket-001",
+  "kind": "feature_part",
+  "backend": "auto",
+  "units": "mm",
+  "part": {
+    "name": "l_bracket_demo",
+    "material": "Q235 steel",
+    "export_formats": [
+      "pdf",
+      "svg",
+      "step"
+    ],
+    "operations": [
+      {
+        "id": "main_l_profile",
+        "type": "l_profile_extrude",
+        "constraint_policy": "fully_constrained",
+        "parameters": {
+          "base_length": 120,
+          "height": 90,
+          "width": 50,
+          "base_thickness": 10,
+          "wall_thickness": 10
+        }
+      }
+    ]
+  }
+}
+

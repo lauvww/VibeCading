@@ -1,0 +1,232 @@
+{
+  "job_id": "中文放样过渡管测试-001",
+  "kind": "primitive_part",
+  "backend": "auto",
+  "units": "mm",
+  "part": {
+    "name": "中文放样过渡管测试件",
+    "source_kind": "manual_primitive_loft",
+    "material": "6061-T6 铝合金",
+    "export_formats": [
+      "pdf",
+      "svg",
+      "step"
+    ],
+    "operations": [
+      {
+        "id": "创建_中间截面基准面",
+        "type": "create_offset_plane",
+        "parameters": {
+          "name": "放样中间截面基准面",
+          "base": {
+            "type": "plane",
+            "name": "front"
+          },
+          "offset": 40
+        }
+      },
+      {
+        "id": "创建_出口截面基准面",
+        "type": "create_offset_plane",
+        "parameters": {
+          "name": "放样出口截面基准面",
+          "base": {
+            "type": "plane",
+            "name": "front"
+          },
+          "offset": 80
+        }
+      },
+      {
+        "id": "开始_入口圆截面草图",
+        "type": "start_sketch",
+        "parameters": {
+          "sketch": "入口圆截面草图",
+          "plane": "front"
+        }
+      },
+      {
+        "id": "入口圆截面",
+        "type": "add_circle",
+        "parameters": {
+          "sketch": "入口圆截面草图",
+          "center": [0, 0],
+          "diameter": 30
+        }
+      },
+      {
+        "id": "入口圆心固定",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "circle_center",
+            "circle": "入口圆截面"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "入口圆直径",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "入口外径",
+              "type": "entity",
+              "entity": {
+                "type": "circle",
+                "id": "入口圆截面"
+              },
+              "position": [20, 18]
+            }
+          ]
+        }
+      },
+      {
+        "id": "检查_入口圆截面完全定义",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "入口圆截面草图"
+        }
+      },
+      {
+        "id": "结束_入口圆截面草图",
+        "type": "finish_sketch",
+        "parameters": {
+          "sketch": "入口圆截面草图"
+        }
+      },
+      {
+        "id": "开始_中间圆截面草图",
+        "type": "start_sketch",
+        "parameters": {
+          "sketch": "中间圆截面草图",
+          "plane": "放样中间截面基准面"
+        }
+      },
+      {
+        "id": "中间圆截面",
+        "type": "add_circle",
+        "parameters": {
+          "sketch": "中间圆截面草图",
+          "center": [0, 0],
+          "diameter": 22
+        }
+      },
+      {
+        "id": "中间圆心固定",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "circle_center",
+            "circle": "中间圆截面"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "中间圆直径",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "中间外径",
+              "type": "entity",
+              "entity": {
+                "type": "circle",
+                "id": "中间圆截面"
+              },
+              "position": [17, 15]
+            }
+          ]
+        }
+      },
+      {
+        "id": "检查_中间圆截面完全定义",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "中间圆截面草图"
+        }
+      },
+      {
+        "id": "结束_中间圆截面草图",
+        "type": "finish_sketch",
+        "parameters": {
+          "sketch": "中间圆截面草图"
+        }
+      },
+      {
+        "id": "开始_出口圆截面草图",
+        "type": "start_sketch",
+        "parameters": {
+          "sketch": "出口圆截面草图",
+          "plane": "放样出口截面基准面"
+        }
+      },
+      {
+        "id": "出口圆截面",
+        "type": "add_circle",
+        "parameters": {
+          "sketch": "出口圆截面草图",
+          "center": [0, 0],
+          "diameter": 14
+        }
+      },
+      {
+        "id": "出口圆心固定",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "circle_center",
+            "circle": "出口圆截面"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "出口圆直径",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "出口外径",
+              "type": "entity",
+              "entity": {
+                "type": "circle",
+                "id": "出口圆截面"
+              },
+              "position": [14, 12]
+            }
+          ]
+        }
+      },
+      {
+        "id": "检查_出口圆截面完全定义",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "出口圆截面草图"
+        }
+      },
+      {
+        "id": "结束_出口圆截面草图",
+        "type": "finish_sketch",
+        "parameters": {
+          "sketch": "出口圆截面草图"
+        }
+      },
+      {
+        "id": "放样_圆形过渡实体",
+        "type": "loft",
+        "parameters": {
+          "profiles": [
+            "入口圆截面草图",
+            "中间圆截面草图",
+            "出口圆截面草图"
+          ],
+          "keep_tangency": false,
+          "merge": true
+        }
+      }
+    ]
+  }
+}

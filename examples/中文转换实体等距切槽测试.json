@@ -1,0 +1,223 @@
+{
+  "job_id": "中文转换实体等距切槽测试-001",
+  "kind": "primitive_part",
+  "units": "mm",
+  "part": {
+    "name": "中文转换实体等距切槽测试件",
+    "source_kind": "manual_primitive_convert_offset_groove",
+    "export_formats": ["pdf", "svg", "step"],
+    "operations": [
+      {
+        "id": "开始_基板草图",
+        "type": "start_sketch",
+        "parameters": {
+          "sketch": "基板草图",
+          "plane": "前视基准面"
+        }
+      },
+      {
+        "id": "基板轮廓",
+        "type": "add_center_rectangle",
+        "parameters": {
+          "sketch": "基板草图",
+          "center": [0, 0],
+          "size": [100, 60]
+        }
+      },
+      {
+        "id": "基板中心点",
+        "type": "add_point",
+        "parameters": {
+          "sketch": "基板草图",
+          "point": [0, 0]
+        }
+      },
+      {
+        "id": "基板水平垂直约束",
+        "type": "add_axis_constraints",
+        "parameters": {
+          "profile": "基板轮廓"
+        }
+      },
+      {
+        "id": "基板中心固定",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "point",
+            "id": "基板中心点"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "基板尺寸",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "基板长度",
+              "type": "entity",
+              "entity": {
+                "type": "profile_edge",
+                "profile": "基板轮廓",
+                "edge": "bottom"
+              },
+              "position": [0, -42]
+            },
+            {
+              "id": "基板宽度",
+              "type": "entity",
+              "entity": {
+                "type": "profile_edge",
+                "profile": "基板轮廓",
+                "edge": "left"
+              },
+              "position": [-62, 0]
+            },
+            {
+              "id": "基板X居中",
+              "type": "horizontal_between",
+              "first": {
+                "type": "point",
+                "id": "基板中心点"
+              },
+              "second": {
+                "type": "profile_edge",
+                "profile": "基板轮廓",
+                "edge": "left"
+              },
+              "position": [-25, 12]
+            },
+            {
+              "id": "基板Y居中",
+              "type": "vertical_between",
+              "first": {
+                "type": "point",
+                "id": "基板中心点"
+              },
+              "second": {
+                "type": "profile_edge",
+                "profile": "基板轮廓",
+                "edge": "bottom"
+              },
+              "position": [12, -15]
+            }
+          ]
+        }
+      },
+      {
+        "id": "检查_基板草图完全定义",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "基板草图"
+        }
+      },
+      {
+        "id": "拉伸_基板",
+        "type": "extrude",
+        "parameters": {
+          "sketch": "基板草图",
+          "depth": 10
+        }
+      },
+      {
+        "id": "开始_上表面等距槽草图",
+        "type": "start_sketch_on_face",
+        "parameters": {
+          "sketch": "上表面等距槽草图",
+          "target": {
+            "type": "body_face",
+            "feature": "拉伸_基板",
+            "normal": [0, 0, 1],
+            "position": "max",
+            "area": "largest",
+            "area_rank": 0
+          }
+        }
+      },
+      {
+        "id": "槽草图原点",
+        "type": "add_point",
+        "parameters": {
+          "sketch": "上表面等距槽草图",
+          "point": [0, 0]
+        }
+      },
+      {
+        "id": "槽草图原点固定",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "point",
+            "id": "槽草图原点"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "转换_上表面外轮廓",
+        "type": "convert_entities",
+        "parameters": {
+          "sketch": "上表面等距槽草图",
+          "target": {
+            "type": "body_face_edges",
+            "feature": "拉伸_基板",
+            "normal": [0, 0, 1],
+            "position": "max",
+            "area": "largest",
+            "area_rank": 0,
+            "loop": "outer"
+          },
+          "prefer_native": false,
+          "chain": false
+        }
+      },
+      {
+        "id": "等距_内侧槽轮廓",
+        "type": "offset_entities",
+        "parameters": {
+          "sketch": "上表面等距槽草图",
+          "source": {
+            "type": "profile",
+            "id": "转换_上表面外轮廓"
+          },
+          "offset": 8,
+          "direction": "inside",
+          "chain": true,
+          "add_dimensions": true
+        }
+      },
+      {
+        "id": "补全_等距槽草图残余自由度",
+        "type": "fully_define_sketch",
+        "parameters": {
+          "sketch": "上表面等距槽草图",
+          "datum": {
+            "type": "point",
+            "id": "槽草图原点"
+          },
+          "apply_relations": true,
+          "relation_mask": 1023,
+          "apply_dimensions": true
+        }
+      },
+      {
+        "id": "检查_等距槽草图完全定义",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "上表面等距槽草图"
+        }
+      },
+      {
+        "id": "切除_上表面等距浅槽",
+        "type": "cut_extrude",
+        "parameters": {
+          "sketch": "上表面等距槽草图",
+          "depth": 2,
+          "reverse_direction": false
+        }
+      }
+    ]
+  }
+}

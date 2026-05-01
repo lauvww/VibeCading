@@ -1,0 +1,550 @@
+{
+  "job_id": "中文圆弧扫描切除测试-001",
+  "kind": "primitive_part",
+  "backend": "auto",
+  "units": "mm",
+  "part": {
+    "name": "中文圆弧扫描空心管测试件",
+    "source_kind": "manual_primitive_arc_sweep_cut_sweep",
+    "material": "304不锈钢",
+    "export_formats": [
+      "pdf",
+      "svg",
+      "step"
+    ],
+    "operations": [
+      {
+        "id": "开始_外管圆弧路径草图",
+        "type": "start_sketch",
+        "parameters": {
+          "sketch": "外管圆弧路径草图",
+          "plane": "front"
+        }
+      },
+      {
+        "id": "外管路径直线一",
+        "type": "add_polyline",
+        "parameters": {
+          "sketch": "外管圆弧路径草图",
+          "points": [
+            [0, 0],
+            [50, 0]
+          ],
+          "closed": false
+        }
+      },
+      {
+        "id": "外管路径圆弧",
+        "type": "add_arc",
+        "parameters": {
+          "sketch": "外管圆弧路径草图",
+          "center": [50, 20],
+          "start": [50, 0],
+          "end": [70, 20],
+          "direction": "counterclockwise"
+        }
+      },
+      {
+        "id": "外管路径直线二",
+        "type": "add_polyline",
+        "parameters": {
+          "sketch": "外管圆弧路径草图",
+          "points": [
+            [70, 20],
+            [110, 20]
+          ],
+          "closed": false
+        }
+      },
+      {
+        "id": "外管路径直线约束一",
+        "type": "add_axis_constraints",
+        "parameters": {
+          "profile": "外管路径直线一"
+        }
+      },
+      {
+        "id": "外管路径直线约束二",
+        "type": "add_axis_constraints",
+        "parameters": {
+          "profile": "外管路径直线二"
+        }
+      },
+      {
+        "id": "外管路径起点固定",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "profile_point",
+            "profile": "外管路径直线一",
+            "index": 0,
+            "point": "start"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "外管直线一接圆弧",
+        "type": "add_relation",
+        "parameters": {
+          "entities": [
+            {
+              "type": "profile_point",
+              "profile": "外管路径直线一",
+              "index": 0,
+              "point": "end"
+            },
+            {
+              "type": "arc",
+              "id": "外管路径圆弧"
+            }
+          ],
+          "relation": "coincident"
+        }
+      },
+      {
+        "id": "外管直线一圆弧相切",
+        "type": "add_relation",
+        "parameters": {
+          "entities": [
+            {
+              "type": "profile_segment",
+              "profile": "外管路径直线一",
+              "index": 0
+            },
+            {
+              "type": "arc_point",
+              "id": "外管路径圆弧",
+              "point": "start"
+            }
+          ],
+          "relation": "tangent"
+        }
+      },
+      {
+        "id": "外管圆弧接直线二",
+        "type": "add_relation",
+        "parameters": {
+          "entities": [
+            {
+              "type": "arc",
+              "id": "外管路径圆弧"
+            },
+            {
+              "type": "profile_point",
+              "profile": "外管路径直线二",
+              "index": 0,
+              "point": "start"
+            }
+          ],
+          "relation": "coincident"
+        }
+      },
+      {
+        "id": "外管圆弧直线二相切",
+        "type": "add_relation",
+        "parameters": {
+          "entities": [
+            {
+              "type": "arc_point",
+              "id": "外管路径圆弧",
+              "point": "end"
+            },
+            {
+              "type": "profile_segment",
+              "profile": "外管路径直线二",
+              "index": 0
+            }
+          ],
+          "relation": "tangent"
+        }
+      },
+      {
+        "id": "外管路径尺寸",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "外管路径直线一长度",
+              "type": "entity",
+              "entity": {
+                "type": "profile_segment",
+                "profile": "外管路径直线一",
+                "index": 0
+              },
+              "position": [25, -10]
+            },
+            {
+              "id": "外管圆弧半径",
+              "type": "entity",
+              "entity": {
+                "type": "arc",
+                "id": "外管路径圆弧"
+              },
+              "position": [64, 8]
+            },
+            {
+              "id": "外管圆弧中心水平定位",
+              "type": "horizontal_between",
+              "first": {
+                "type": "profile_point",
+                "profile": "外管路径直线一",
+                "index": 0,
+                "point": "start"
+              },
+              "second": {
+                "type": "arc_center",
+                "id": "外管路径圆弧"
+              },
+              "position": [25, 28]
+            },
+            {
+              "id": "外管圆弧中心竖直定位",
+              "type": "vertical_between",
+              "first": {
+                "type": "profile_point",
+                "profile": "外管路径直线一",
+                "index": 0,
+                "point": "start"
+              },
+              "second": {
+                "type": "arc_center",
+                "id": "外管路径圆弧"
+              },
+              "position": [-10, 10]
+            },
+            {
+              "id": "外管路径直线二长度",
+              "type": "entity",
+              "entity": {
+                "type": "profile_segment",
+                "profile": "外管路径直线二",
+                "index": 0
+              },
+              "position": [90, 32]
+            }
+          ]
+        }
+      },
+      {
+        "id": "检查_外管圆弧路径草图完全定义",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "外管圆弧路径草图"
+        }
+      },
+      {
+        "id": "结束_外管圆弧路径草图",
+        "type": "finish_sketch",
+        "parameters": {
+          "sketch": "外管圆弧路径草图"
+        }
+      },
+      {
+        "id": "开始_外管截面草图",
+        "type": "start_sketch",
+        "parameters": {
+          "sketch": "外管截面草图",
+          "plane": "right"
+        }
+      },
+      {
+        "id": "外管圆形截面",
+        "type": "add_circle",
+        "parameters": {
+          "sketch": "外管截面草图",
+          "center": [0, 0],
+          "diameter": 14
+        }
+      },
+      {
+        "id": "外管截面圆心固定",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "circle_center",
+            "circle": "外管圆形截面"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "外管截面尺寸",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "外管外径",
+              "type": "entity",
+              "entity": {
+                "type": "circle",
+                "id": "外管圆形截面"
+              },
+              "position": [16, 10]
+            }
+          ]
+        }
+      },
+      {
+        "id": "检查_外管截面草图完全定义",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "外管截面草图"
+        }
+      },
+      {
+        "id": "扫描_外管圆弧实体",
+        "type": "sweep",
+        "parameters": {
+          "profile": "外管截面草图",
+          "path": "外管圆弧路径草图",
+          "merge": true,
+          "twist_control": "follow_path"
+        }
+      },
+      {
+        "id": "开始_内孔圆弧路径草图",
+        "type": "start_sketch",
+        "parameters": {
+          "sketch": "内孔圆弧路径草图",
+          "plane": "front"
+        }
+      },
+      {
+        "id": "内孔路径直线一",
+        "type": "add_polyline",
+        "parameters": {
+          "sketch": "内孔圆弧路径草图",
+          "points": [
+            [0, 0],
+            [50, 0]
+          ],
+          "closed": false
+        }
+      },
+      {
+        "id": "内孔路径圆弧",
+        "type": "add_arc",
+        "parameters": {
+          "sketch": "内孔圆弧路径草图",
+          "center": [50, 20],
+          "start": [50, 0],
+          "end": [70, 20],
+          "direction": "counterclockwise"
+        }
+      },
+      {
+        "id": "内孔路径直线二",
+        "type": "add_polyline",
+        "parameters": {
+          "sketch": "内孔圆弧路径草图",
+          "points": [
+            [70, 20],
+            [110, 20]
+          ],
+          "closed": false
+        }
+      },
+      {
+        "id": "内孔路径直线约束一",
+        "type": "add_axis_constraints",
+        "parameters": {
+          "profile": "内孔路径直线一"
+        }
+      },
+      {
+        "id": "内孔路径直线约束二",
+        "type": "add_axis_constraints",
+        "parameters": {
+          "profile": "内孔路径直线二"
+        }
+      },
+      {
+        "id": "内孔路径起点固定",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "profile_point",
+            "profile": "内孔路径直线一",
+            "index": 0,
+            "point": "start"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "内孔直线一接圆弧",
+        "type": "add_relation",
+        "parameters": {
+          "entities": [
+            {
+              "type": "profile_point",
+              "profile": "内孔路径直线一",
+              "index": 0,
+              "point": "end"
+            },
+            {
+              "type": "arc_point",
+              "id": "内孔路径圆弧",
+              "point": "start"
+            }
+          ],
+          "relation": "coincident"
+        }
+      },
+      {
+        "id": "内孔圆弧接直线二",
+        "type": "add_relation",
+        "parameters": {
+          "entities": [
+            {
+              "type": "arc_point",
+              "id": "内孔路径圆弧",
+              "point": "end"
+            },
+            {
+              "type": "profile_point",
+              "profile": "内孔路径直线二",
+              "index": 0,
+              "point": "start"
+            }
+          ],
+          "relation": "coincident"
+        }
+      },
+      {
+        "id": "内孔路径尺寸",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "内孔路径直线一长度",
+              "type": "entity",
+              "entity": {
+                "type": "profile_segment",
+                "profile": "内孔路径直线一",
+                "index": 0
+              },
+              "position": [25, -10]
+            },
+            {
+              "id": "内孔圆弧中心水平定位",
+              "type": "horizontal_between",
+              "first": {
+                "type": "profile_point",
+                "profile": "内孔路径直线一",
+                "index": 0,
+                "point": "start"
+              },
+              "second": {
+                "type": "arc_center",
+                "id": "内孔路径圆弧"
+              },
+              "position": [25, 28]
+            },
+            {
+              "id": "内孔圆弧中心竖直定位",
+              "type": "vertical_between",
+              "first": {
+                "type": "profile_point",
+                "profile": "内孔路径直线一",
+                "index": 0,
+                "point": "start"
+              },
+              "second": {
+                "type": "arc_center",
+                "id": "内孔路径圆弧"
+              },
+              "position": [-10, 10]
+            },
+            {
+              "id": "内孔路径直线二长度",
+              "type": "entity",
+              "entity": {
+                "type": "profile_segment",
+                "profile": "内孔路径直线二",
+                "index": 0
+              },
+              "position": [90, 32]
+            }
+          ]
+        }
+      },
+      {
+        "id": "检查_内孔圆弧路径草图完全定义",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "内孔圆弧路径草图"
+        }
+      },
+      {
+        "id": "结束_内孔圆弧路径草图",
+        "type": "finish_sketch",
+        "parameters": {
+          "sketch": "内孔圆弧路径草图"
+        }
+      },
+      {
+        "id": "开始_内孔截面草图",
+        "type": "start_sketch",
+        "parameters": {
+          "sketch": "内孔截面草图",
+          "plane": "right"
+        }
+      },
+      {
+        "id": "内孔圆形截面",
+        "type": "add_circle",
+        "parameters": {
+          "sketch": "内孔截面草图",
+          "center": [0, 0],
+          "diameter": 7
+        }
+      },
+      {
+        "id": "内孔截面圆心固定",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "circle_center",
+            "circle": "内孔圆形截面"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "内孔截面尺寸",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "内孔直径",
+              "type": "entity",
+              "entity": {
+                "type": "circle",
+                "id": "内孔圆形截面"
+              },
+              "position": [10, 8]
+            }
+          ]
+        }
+      },
+      {
+        "id": "检查_内孔截面草图完全定义",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "内孔截面草图"
+        }
+      },
+      {
+        "id": "扫描切除_圆弧内孔",
+        "type": "cut_sweep",
+        "parameters": {
+          "profile": "内孔截面草图",
+          "path": "内孔圆弧路径草图",
+          "twist_control": "follow_path"
+        }
+      }
+    ]
+  }
+}

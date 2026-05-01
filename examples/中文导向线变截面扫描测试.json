@@ -1,0 +1,297 @@
+{
+  "job_id": "中文导向线变截面扫描测试-001",
+  "kind": "primitive_part",
+  "backend": "auto",
+  "units": "mm",
+  "part": {
+    "name": "中文导向线变截面扫描测试件",
+    "source_kind": "manual_primitive_guide_variable_sweep",
+    "material": "铝合金",
+    "export_formats": [
+      "pdf",
+      "svg",
+      "step"
+    ],
+    "operations": [
+      {
+        "id": "开始_导向扫描路径草图",
+        "type": "start_sketch",
+        "parameters": {
+          "sketch": "导向扫描路径草图",
+          "plane": "front"
+        }
+      },
+      {
+        "id": "导向扫描路径",
+        "type": "add_polyline",
+        "parameters": {
+          "sketch": "导向扫描路径草图",
+          "points": [
+            [0, 0],
+            [80, 0]
+          ],
+          "closed": false
+        }
+      },
+      {
+        "id": "导向路径水平约束",
+        "type": "add_axis_constraints",
+        "parameters": {
+          "profile": "导向扫描路径"
+        }
+      },
+      {
+        "id": "导向路径起点固定",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "profile_point",
+            "profile": "导向扫描路径",
+            "index": 0,
+            "point": "start"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "导向路径尺寸",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "导向路径长度",
+              "type": "entity",
+              "entity": {
+                "type": "profile_segment",
+                "profile": "导向扫描路径",
+                "index": 0
+              },
+              "position": [40, -10]
+            }
+          ]
+        }
+      },
+      {
+        "id": "检查_导向扫描路径草图完全定义",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "导向扫描路径草图"
+        }
+      },
+      {
+        "id": "结束_导向扫描路径草图",
+        "type": "finish_sketch",
+        "parameters": {
+          "sketch": "导向扫描路径草图"
+        }
+      },
+      {
+        "id": "开始_扫描导向线草图",
+        "type": "start_sketch",
+        "parameters": {
+          "sketch": "扫描导向线草图",
+          "plane": "front"
+        }
+      },
+      {
+        "id": "扫描导向线",
+        "type": "add_polyline",
+        "parameters": {
+          "sketch": "扫描导向线草图",
+          "points": [
+            [0, 6],
+            [80, 12]
+          ],
+          "closed": false
+        }
+      },
+      {
+        "id": "导向线起点固定",
+        "type": "add_relation",
+        "parameters": {
+          "entity": {
+            "type": "profile_point",
+            "profile": "扫描导向线",
+            "index": 0,
+            "point": "start"
+          },
+          "relation": "fixed"
+        }
+      },
+      {
+        "id": "导向线尺寸",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "导向线水平长度",
+              "type": "horizontal_between",
+              "first": {
+                "type": "profile_point",
+                "profile": "扫描导向线",
+                "index": 0,
+                "point": "start"
+              },
+              "second": {
+                "type": "profile_point",
+                "profile": "扫描导向线",
+                "index": 0,
+                "point": "end"
+              },
+              "position": [40, 18]
+            },
+            {
+              "id": "导向线竖直变化量",
+              "type": "vertical_between",
+              "first": {
+                "type": "profile_point",
+                "profile": "扫描导向线",
+                "index": 0,
+                "point": "start"
+              },
+              "second": {
+                "type": "profile_point",
+                "profile": "扫描导向线",
+                "index": 0,
+                "point": "end"
+              },
+              "position": [88, 9]
+            }
+          ]
+        }
+      },
+      {
+        "id": "检查_扫描导向线草图完全定义",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "扫描导向线草图"
+        }
+      },
+      {
+        "id": "结束_扫描导向线草图",
+        "type": "finish_sketch",
+        "parameters": {
+          "sketch": "扫描导向线草图"
+        }
+      },
+      {
+        "id": "开始_导向变截面圆形截面草图",
+        "type": "start_sketch",
+        "parameters": {
+          "sketch": "导向变截面圆形截面草图",
+          "plane": "right"
+        }
+      },
+      {
+        "id": "导向变截面圆形截面",
+        "type": "add_circle",
+        "parameters": {
+          "sketch": "导向变截面圆形截面草图",
+          "center": [0, 0],
+          "diameter": 12
+        }
+      },
+      {
+        "id": "导向线穿透轮廓点",
+        "type": "add_point",
+        "parameters": {
+          "sketch": "导向变截面圆形截面草图",
+          "point": [0, 6]
+        }
+      },
+      {
+        "id": "路径穿透截面中心",
+        "type": "add_relation",
+        "parameters": {
+          "entities": [
+            {
+              "type": "circle_center",
+              "circle": "导向变截面圆形截面"
+            },
+            {
+              "type": "profile_segment",
+              "profile": "导向扫描路径",
+              "index": 0
+            }
+          ],
+          "relation": "pierce"
+        }
+      },
+      {
+        "id": "导向线点落在截面圆上",
+        "type": "add_relation",
+        "parameters": {
+          "entities": [
+            {
+              "type": "point",
+              "id": "导向线穿透轮廓点"
+            },
+            {
+              "type": "circle",
+              "id": "导向变截面圆形截面"
+            }
+          ],
+          "relation": "coincident"
+        }
+      },
+      {
+        "id": "导向线穿透截面点",
+        "type": "add_relation",
+        "parameters": {
+          "entities": [
+            {
+              "type": "point",
+              "id": "导向线穿透轮廓点"
+            },
+            {
+              "type": "profile_segment",
+              "profile": "扫描导向线",
+              "index": 0
+            }
+          ],
+          "relation": "pierce"
+        }
+      },
+      {
+        "id": "导向变截面圆直径",
+        "type": "add_dimensions",
+        "parameters": {
+          "dimensions": [
+            {
+              "id": "初始圆外径",
+              "type": "entity",
+              "entity": {
+                "type": "circle",
+                "id": "导向变截面圆形截面"
+              },
+              "position": [14, 10]
+            }
+          ]
+        }
+      },
+      {
+        "id": "检查_导向变截面圆形截面草图完全定义",
+        "type": "validate_fully_constrained",
+        "parameters": {
+          "sketch": "导向变截面圆形截面草图"
+        }
+      },
+      {
+        "id": "扫描_导向线变截面实体",
+        "type": "sweep",
+        "parameters": {
+          "profile": "导向变截面圆形截面草图",
+          "path": "导向扫描路径草图",
+          "guide_curves": [
+            "扫描导向线草图"
+          ],
+          "twist_control": "follow_path",
+          "section_control": {
+            "mode": "guide_curves"
+          },
+          "merge": true
+        }
+      }
+    ]
+  }
+}
