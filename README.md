@@ -9,17 +9,26 @@ The first milestone is a conservative CAD Agent MCP flow:
 3. A CAD adapter executes the deterministic operation.
 4. The runner returns generated files, validation status, and an execution log.
 
-MVP-0 started with `mounting_plate`. The product path now uses a two-layer CAD DSL:
+MVP-0 started with `mounting_plate`. The product path now uses an inspectable planning-to-execution pipeline:
 
-1. `mounting_plate` and `feature_part` stay as upper-level templates that are easier for an AI agent to fill from natural language.
-2. Templates compile into `primitive_part` operations.
-3. SolidWorks executes only the primitive operations, so new part templates do not require one new SolidWorks function per feature.
+1. Natural language is first reduced to strategy metadata and a `feature_plan.v1`.
+2. The Feature Plan expresses the dominant geometry, engineering context, feature roles, modeling-method reasons, sketch strategies, parameters, references, unresolved questions, and missing capabilities.
+3. Compile-ready Feature Plans compile into `primitive_part` operations.
+4. SolidWorks executes only primitive operations, so future coverage should expand reusable feature kinds and compiler rules instead of adding one new part generator per shape.
 
 ## Current Status
 
 - Structured JSON job format for a mounting plate.
 - Structured `feature_part` JSON format for controlled upper-level feature templates.
 - Generic `primitive_part` JSON format for low-level sketch, constraint, dimension, and extrusion operations.
+- Lightweight natural-language modeling strategy planner through `plan-strategy` and MCP tool `plan_modeling_strategy_tool`.
+- Natural-language Feature Plan drafting through `plan-features` and MCP tool `draft_feature_plan_tool`.
+- First-pass engineering semantics in Feature Plan: `part_roles`, `working_context`, `mating_interfaces`, `manufacturing_intent`, feature `functional_role`, `feature_intent`, `modeling_method`, and `sketch_strategy`.
+- Natural-language adjustment obround slots / long slots can compile from Feature Plan to `add_straight_slot` + `cut_extrude`; the SolidWorks executor creates dimensioned, fully constrained slot sketches.
+- Natural-language annular / seal / relief grooves on rotational parts compile to `cut_revolve` when groove width, bottom diameter, and axial position are known.
+- Natural-language countersinks, counterbores, threaded holes, generic pockets, centered clearance slots, bosses, and ribs can compile to SolidWorks primitive operations when their driving dimensions are known. Countersinks use a drafted cut for the conical seat; threaded holes currently create tap-drill geometry and preserve thread metadata, not a full SolidWorks Hole Wizard thread feature.
+- Remaining unsupported engineering intent, including ambiguous planar slots, fillets, chamfers, and features with missing target/reference data, is recorded in Feature Plan with questions or `missing_capabilities` instead of being silently omitted.
+- Feature Plan to `primitive_part` compilation through `draft-job` and `run-nl`.
 - Validation for units, dimensions, holes, and export formats.
 - Local preview backend with SVG and PDF output.
 - FreeCAD adapter scaffold that can export STEP when FreeCAD Python modules are available.
@@ -47,6 +56,55 @@ python .\mcp-server\server.py validate .\examples\basic\mounting_plate.json
 python .\mcp-server\server.py validate .\examples\basic\l_bracket.json
 python .\mcp-server\server.py validate .\examples\basic\primitive_l_bracket.json
 ```
+
+Plan a modeling strategy from natural language before generating Primitive DSL:
+
+```powershell
+python .\mcp-server\server.py plan-strategy "做一个带中心孔和环形槽的阶梯轴，直径40，长度120"
+```
+
+This planning step is metadata only. It chooses a default modeling family, lists recommended primitive operation types, records assumptions, and reports missing engineering parameters that should be confirmed before CAD execution.
+
+Draft the inspectable Feature Plan before compiling Primitive DSL:
+
+```powershell
+python .\mcp-server\server.py plan-features "做一个安装板，长120宽80厚8，四角孔孔径8，孔边距15，材料6061铝"
+```
+
+The Feature Plan is the handoff layer between Agent reasoning and CAD execution. It should grow by adding reusable engineering semantics and feature kinds such as `base_body`, `hole`, `hole_pattern`, `slot`, `groove`, `rib`, `boss`, `sweep_path`, and `loft_section`, not by adding a separate hard-coded generator for every named part.
+
+Draft a supported natural-language request into executable Primitive DSL:
+
+```powershell
+python .\mcp-server\server.py draft-job "做一个阶梯轴，总长120，最大直径40，左段直径30长度40，右段直径20长度30，中心孔直径10贯穿，材料45钢"
+```
+
+Run the same request directly through a backend:
+
+```powershell
+python .\mcp-server\server.py run-nl "做一个阶梯轴，总长120，最大直径40，左段直径30长度40，右段直径20长度30，中心孔直径10贯穿，材料45钢" --backend preview
+```
+
+Run a mounting plate request:
+
+```powershell
+python .\mcp-server\server.py run-nl "做一个安装板，长120宽80厚8，四角孔孔径8，孔边距15，材料6061铝" --backend preview
+```
+
+Run an adjustment-slot mounting plate request:
+
+```powershell
+python .\mcp-server\server.py run-nl "做一个用于固定电机的安装板，长120宽80厚8，两个长圆孔用于调节张紧，槽长30槽宽8，材料6061铝" --backend preview
+```
+
+The current Feature Plan compiler supports two common geometry families:
+
+- rotational parts such as stepped shafts, simple cylinders, washers, through center bores, and annular/seal/relief grooves, using `revolve` / `cut_revolve`;
+- prismatic plate/block parts such as mounting plates with center holes, four-corner hole patterns, adjustment obround slots, centered pockets/clearance slots, countersinks, counterbores, tap-drill threaded holes, bosses, and simple rib extrusions, using `extrude` / `cut_extrude`.
+
+It does not silently ignore unsupported requested features. For example, if the user asks for a chamfer, fillet, ambiguous clearance feature, or a feature without enough dimensions or references, the draft returns questions and `missing_capabilities` instead of producing an incomplete CAD job.
+
+Supported but incomplete engineering semantics are called out explicitly. For example, `螺纹孔` currently generates the correct tap-drill cut and records thread metadata for later drawings / Hole Wizard expansion.
 
 Run tests:
 

@@ -198,7 +198,8 @@ VibeCading 不是通用聊天机器人，也不是简单宏集合。它应该是
 ```text
 Natural Language
 -> Agent Planning
--> CAD DSL / JSON
+-> Feature Plan
+-> Primitive DSL / CAD JSON
 -> MCP Tools
 -> CAD Adapter
 -> SolidWorks / FreeCAD / AutoCAD / other CAD
@@ -208,6 +209,7 @@ Natural Language
 各层职责：
 
 - Agent：理解需求、补齐参数、拆解特征、决定是否追问。
+- Feature Plan：表达自然语言解析后的主形体、工程语义上下文、功能特征、建模方法、草图策略、关键参数、引用基准、缺失能力和待确认问题。
 - DSL：表达确定的 CAD 意图，不包含随意脚本。
 - MCP / tools：提供受控操作入口。
 - Adapter：处理具体 CAD 软件 API。
@@ -215,6 +217,51 @@ Natural Language
 - Outputs：保存模型、导出文件、预览和摘要。
 
 不要把所有逻辑塞进一个 SolidWorks 宏里。
+
+### 5.1 产品架构：工程语义驱动，不做模板库
+
+VibeCading 的长期产品架构不是“越做越多的零件模板库”，也不是让用户说出具体 CAD 命令后再执行。正确方向是让 Agent 像工程师一样先理解零件为什么存在、在哪里工作、和什么配合，再决定如何建模。
+
+自然语言建模应走下面这条主线：
+
+```text
+用户自然语言
+-> 提取零件功能、使用场景、装配/配合关系、制造约束
+-> 拆成工程特征：基体、安装界面、定位界面、配合孔/轴、密封槽、加强筋、避让、导向、过渡等
+-> 针对每个特征选择建模方法：拉伸、切除、旋转、扫描、放样、阵列、镜像、面引用、草图处理等
+-> 针对每个建模方法选择草图策略：轮廓、轴线、路径、截面、导向线、引用边、等距线、约束和尺寸
+-> 生成 Feature Plan
+-> 编译为 Primitive DSL
+-> SolidWorks 执行、验证、导出
+```
+
+模板只能作为上层示例、回归样件或常见任务入口，不能成为主要扩展方式。后续不要通过不断新增 `shaft_generator`、`flange_generator`、`special_part_generator` 这类专用模板来覆盖复杂零件。复杂零件应通过“功能特征 + 建模策略 + 草图策略”的组合来表达。
+
+Feature Plan 应逐步记录这些工程语义；当前自然语言草案已经开始输出其中的基础字段：
+
+- `part_roles`：零件在机构中的作用，例如支撑、定位、连接、密封、传动、防护、导向、安装。
+- `working_context`：使用场景和受力/运动/空间约束，例如固定底座、轴承座、管路过渡、钣金支架、密封端盖。
+- `mating_interfaces`：与其他零件配合的面、孔、轴、槽、台阶、基准和装配关系。
+- `feature_intents`：每个特征的功能作用，例如安装孔、定位销孔、轴承孔、退刀槽、密封槽、加强筋、减重孔、避让槽。
+- `modeling_method`：Agent 选择的建模命令及原因。
+- `sketch_strategy`：该特征应如何画草图、如何约束、哪些尺寸是驱动尺寸、是否需要引用已有面/边。
+- `questions`：当功能、配合、受力、制造语义不清楚时需要向用户确认的问题。
+
+Agent 应该自己判断建模指令，不能要求用户必须说“用拉伸”“用旋转”“用放样”。用户可以这样描述：
+
+```text
+做一个用于固定电机的小支架，底部四个安装孔，竖板上有两个长圆孔用于调节张紧。
+```
+
+Agent 应该从“固定”“安装孔”“调节张紧”“长圆孔”推断基体、安装界面、可调连接界面和对应的建模/草图策略，而不是等待用户命名 CAD 命令。
+
+当 Agent 无法判断功能或使用场景时，必须先和用户对齐工程语义。典型需要追问的情况包括：
+
+- 这个孔是安装孔、定位孔、轴承孔、减重孔还是走线孔。
+- 这个槽是密封槽、退刀槽、避让槽、导向槽还是调节长孔。
+- 某个圆角/倒角是制造去锐边、装配导向、应力优化还是外观处理。
+- 某个面是装配基准、加工基准、密封面、承载面还是外观面。
+- 用户描述的特征既可以拉伸切除，也可以旋转切除、扫描切除或放样切除，且不同选择会影响制造和后续修改。
 
 ## 6. DSL 和工具设计规则
 
@@ -224,22 +271,59 @@ Natural Language
 
 ```json
 {
-  "kind": "feature_part",
-  "part": {
-    "operations": [
-      {
-        "type": "l_profile_extrude",
-        "constraint_policy": "fully_constrained",
-        "parameters": {
-          "base_length": 120,
-          "height": 90,
-          "width": 50,
-          "base_thickness": 10,
-          "wall_thickness": 10
-        }
+  "version": "feature_plan.v1",
+  "dominant_geometry": "prismatic",
+  "engineering_context": {
+    "part_roles": ["mounting_support"],
+    "working_context": ["fixed_mounting"],
+    "mating_interfaces": ["mounting_face", "four_corner_fastener_pattern"],
+    "manufacturing_intent": ["milled_or_plate_like"],
+    "semantic_assumptions": ["units_mm"]
+  },
+  "features": [
+    {
+      "id": "base_plate",
+      "kind": "base_body",
+      "method": "extrude",
+      "functional_role": "mounting_plate_body",
+      "feature_intent": "provide the primary mounting body and flat mounting faces",
+      "mating_interfaces": ["mounting_face"],
+      "modeling_method": {
+        "command": "extrude",
+        "reason": "Plate geometry is clearest as one constrained closed profile extruded to thickness."
+      },
+      "sketch_strategy": {
+        "type": "centered_closed_rectangle",
+        "driving_dimensions": ["length", "width", "thickness"]
+      },
+      "parameters": {
+        "length": 120,
+        "width": 80,
+        "thickness": 8
       }
-    ]
-  }
+    },
+    {
+      "id": "fastener_hole_pattern",
+      "kind": "hole_pattern",
+      "method": "cut_extrude",
+      "functional_role": "fastener_hole_pattern",
+      "feature_intent": "provide bolt or screw clearance pattern for mounting",
+      "mating_interfaces": ["fastener_or_clearance_hole"],
+      "modeling_method": {
+        "command": "cut_extrude",
+        "reason": "Same-plane through holes are stable as one constrained hole sketch followed by through cut."
+      },
+      "sketch_strategy": {
+        "type": "same_plane_circle_layout",
+        "driving_dimensions": ["hole_diameter", "hole_centers", "edge_margin_or_pitch"]
+      },
+      "parameters": {
+        "through": true,
+        "holes": []
+      }
+    }
+  ],
+  "missing_capabilities": []
 }
 ```
 
@@ -251,6 +335,9 @@ AI 生成一大段不可审计、不可拆解、不可验证的 SolidWorks 宏
 
 新增功能时优先增加：
 
+- 可复用的 Feature Plan feature kind
+- Feature Plan 到 Primitive DSL 的编译规则
+- 功能语义字段，例如 `functional_role`、`mating_interface`、`modeling_method`、`sketch_strategy`
 - 明确的 operation type
 - 明确的参数
 - 参数校验
@@ -268,6 +355,7 @@ AI 生成一大段不可审计、不可拆解、不可验证的 SolidWorks 宏
 - 草图尽量完全约束。
 - 完全约束应主要来自尺寸、水平/垂直、重合、相切、镜像、穿透等工程关系；少用 `fixed`，避免把本该可修改的草图几何直接固定死。
 - `fully_define_sketch` 只能作为尺寸和几何关系之后的残余自由度补全工具，尤其用于样条曲线手柄/曲率等 SolidWorks 内部自由度；不要用它掩盖缺少设计意图的草图。
+- 草图尺寸应表达工程师真正会修改的驱动尺寸，不要为了完全定义而把每个端点都从原点标尺寸。矩形用中心/长宽，孔用中心/直径，槽用中心/长宽/间距，回转截面用轴向位置/半径，样条用关键控制点和相切/曲率关系；SolidWorks 显示为灰色的从动尺寸过多时，优先改 primitive 的关系和驱动尺寸策略。
 - 关键尺寸来自参数，不要靠手动画出来的偶然几何。
 - 特征树可读、可维护。
 - 输出文件真实存在且非空。
@@ -303,6 +391,11 @@ AI 生成一大段不可审计、不可拆解、不可验证的 SolidWorks 宏
 - 中文 job、零件、特征、命名面、基准面和输出文件名。
 - SLDPRT / STEP / SVG / PDF 输出。
 - summary 中记录约束状态、导出状态和错误信息。
+- 自然语言建模策略规划 `plan-strategy`，用于在生成 Primitive DSL 前选择建模方式、列出推荐 primitive 和提示缺失参数。
+- 自然语言到 `feature_plan.v1` 草案生成 `plan-features`，用于记录 dominant geometry、engineering_context、features、functional_role、feature_intent、modeling_method、sketch_strategy、parameters、references、questions 和 missing capabilities。
+- 常见工程特征能进入 Feature Plan planned feature；如果尺寸、目标面或工程语义不足，必须带 `questions` / `missing_capabilities`，不能被静默忽略。
+- Feature Plan 到 `primitive_part` 草案编译 `draft-job`，以及自然语言直接执行 `run-nl`。当前真机验证范围包括中文阶梯轴 + 贯穿中心孔、中文安装板 + 四角孔、中文电机安装板 + 两个调节长圆孔、轴类环形槽 / 密封槽 / 退刀槽、沉孔、带拔模角锥形沉头孔、螺纹孔攻丝底孔、居中口袋、居中避让槽、凸台、简单拉伸加强筋：Agent 选择旋转或棱柱策略，生成 revolve / cut_revolve 或 extrude / cut_extrude primitive；长圆孔通过 `add_straight_slot` + `cut_extrude` 生成，沉头孔通过带 `draft_angle` 的 `cut_extrude` 生成锥形座，螺纹孔当前生成 tap-drill 底孔并记录 thread metadata，SolidWorks 输出 SLDPRT / STEP / SVG / PDF，并记录草图 fully constrained。
+- 螺纹孔当前还不是完整 SolidWorks Hole Wizard / cosmetic thread 特征；后续如果要用于正式工程图螺纹标注，应继续补 Hole Wizard 或 cosmetic thread executor。
 
 后续修改时，不要破坏这些已验证能力。
 
@@ -326,6 +419,36 @@ D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py validate .\exa
 ```powershell
 D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\basic\mounting_plate.json --backend preview
 D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run .\examples\basic\l_bracket.json --backend preview
+```
+
+自然语言建模策略规划：
+
+```powershell
+D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py plan-strategy "做一个带中心孔和环形槽的阶梯轴，直径40，长度120"
+```
+
+自然语言生成 Feature Plan：
+
+```powershell
+D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py plan-features "做一个安装板，长120宽80厚8，四角孔孔径8，孔边距15，材料6061铝"
+```
+
+自然语言生成 Primitive JSON 草案：
+
+```powershell
+D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py draft-job "做一个阶梯轴，总长120，最大直径40，左段直径30长度40，右段直径20长度30，中心孔直径10贯穿，材料45钢"
+```
+
+自然语言直接执行建模：
+
+```powershell
+D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run-nl "做一个阶梯轴，总长120，最大直径40，左段直径30长度40，右段直径20长度30，中心孔直径10贯穿，材料45钢" --backend solidworks
+```
+
+自然语言安装板直接执行建模：
+
+```powershell
+D:\VibeCading\.conda\VibeCading\python.exe .\mcp-server\server.py run-nl "做一个安装板，长120宽80厚8，四角孔孔径8，孔边距15，材料6061铝" --backend solidworks
 ```
 
 检查 SolidWorks：
@@ -387,15 +510,22 @@ SolidWorks COM 状态可能受以下因素影响：
 Agent 面对自然语言 CAD 需求时，应该：
 
 1. 判断任务属于零件、装配、出图、逆向建模还是导出。
-2. 提取明确尺寸、孔、材料、数量、导出格式等参数。
-3. 对缺失的工程关键参数追问。
-4. 能合理默认的非关键参数可以自行默认，并在 summary 里记录。
-5. 生成结构化 CAD JSON，而不是自由宏。
-6. 执行后检查约束、导出和文件状态。
-7. 给用户返回完成结果、产物路径、验证状态和风险。
+2. 先理解零件功能、使用场景、受力/运动/空间约束、装配关系和配合类型。
+3. 再提取明确尺寸、孔、材料、数量、导出格式等参数。
+4. 把零件拆成有工程意图的特征，而不是只拆成几何形状。
+5. 为每个特征选择建模方法和草图策略，并记录为什么这样选。
+6. 对缺失的工程关键参数追问。
+7. 能合理默认的非关键参数可以自行默认，并在 summary 里记录。
+8. 生成结构化 Feature Plan / CAD JSON，而不是自由宏。
+9. 执行后检查约束、导出和文件状态。
+10. 给用户返回完成结果、产物路径、验证状态和风险。
 
-自然语言转建模时，先判断建模策略，再生成 primitive：
+自然语言转建模时，先判断建模策略，再生成 Feature Plan，最后编译为 primitive：
 
+- 建模策略必须由 Agent 基于功能和工程语义判断，不应要求用户命名 CAD 指令。
+- 先判断每个特征的作用：承载、安装、定位、连接、密封、传动、导向、避让、减重、加强、外观或制造处理。
+- 再判断该特征与其他零件的配合关系：间隙配合、过盈配合、螺栓连接、销定位、轴承座、密封面、滑动导向、焊接/钣金折弯等。
+- 最后选择建模方法和草图策略。建模方法决定草图怎么画，草图不能脱离后续特征命令独立设计。
 - 板、块、凸台、筋、槽、口袋类几何优先用拉伸 / 拉伸切除。
 - 如果圆角、倒角、对称孔、等距孔阵列可以在草图阶段稳定表达，优先使用草图级 primitive，而不是额外增加实体圆角、倒角、镜像或阵列特征。
 - 草图圆角和倒角的默认工程流程是先画基础草图并完成尺寸/几何约束，再调用 SolidWorks 的草图圆角或草图倒角命令；不要默认直接画一个已倒角的固定轮廓。
@@ -409,12 +539,23 @@ Agent 面对自然语言 CAD 需求时，应该：
 - 多截面过渡、异形管、风道、外壳过渡优先用放样 `loft` primitive。截面顺序、截面基准面、是否需要导向线或连接点会直接影响结果，缺失时应让 agent 追问或使用清晰默认值。
 - 变径孔、渐缩槽、异形贯穿减料、进出口不同形状的内部通道优先用放样切除 `cut_loft` primitive。切除截面必须落在已有实体的合理范围内，截面顺序不能随意调换。
 
-不要让 AI 因为用户用了自然语言就直接生成自由宏。AI 应该先把语义拆成草图、基准、路径、截面、约束、尺寸和特征 primitive。
+草图策略必须服务于选定的建模方法：
+
+- 拉伸 / 拉伸切除：使用闭合轮廓，优先用中心矩形、圆、槽、多边形、等距轮廓等可尺寸驱动草图。
+- 旋转 / 旋转切除：使用半剖轮廓和明确旋转轴，轴线、台阶、孔、槽的尺寸要符合车削类设计意图。
+- 扫描 / 扫描切除：拆成路径草图和截面草图，必须处理 profile 与 path 的穿透/重合关系，导向线扫描还要处理 guide curve。
+- 放样 / 放样切除：使用有序截面草图和明确基准/偏置平面，截面顺序、连接方向和尺寸要可解释。
+- 面派生特征：当特征依赖已有实体边界时，优先用 `convert_entities` / `offset_entities`，再剪裁或删除临时引用，保留干净的最终轮廓。
+- 阵列 / 镜像：如果重复关系本身属于同一草图意图，优先在草图中表达；如果是装配或独立特征语义，再使用特征级阵列/镜像。
+
+不要让 AI 因为用户用了自然语言就直接生成自由宏。AI 应该先把语义拆成主形体、功能特征、草图、基准、路径、截面、约束、尺寸和引用关系，写入 Feature Plan，再由受控编译器生成 primitive。
 
 需要追问的典型情况：
 
 - 关键尺寸缺失。
 - 孔位置不明确。
+- 孔、槽、面、圆角、倒角等特征的功能作用不明确。
+- 使用场景、载荷方向、运动关系、配合类型会影响建模方案。
 - 装配基准不明确。
 - 出图标准、公差、材料等制造语义不明确。
 - 二维图纸逆向存在多种可能三维解释。
@@ -427,20 +568,23 @@ Agent 面对自然语言 CAD 需求时，应该：
 
 ### 13.1 不要靠无限增加默认判断来处理复杂建模
 
-实际工程建模中，同一个零件往往有多种建模方式。工程师会根据经验选择最简洁、最稳定、最容易修改的建模方案，而不是机械地套用固定规则。
+实际工程建模中，同一个零件往往有多种建模方式。工程师会根据零件功能、使用场景、装配关系、配合类型、制造方式和后续修改需求，选择最简洁、最稳定、最容易修改的建模方案，而不是机械地套用固定规则。
 
 因此，Skill 里写入的默认判断只能作为第一批工程经验样例，不能变成无限增长的 `if this part name then do that` 规则库。
 
-当遇到不在当前默认判断里的零件，或者复杂的多步骤、多特征零件时，Agent 应该先做建模策略规划，再生成 primitive：
+当遇到不在当前默认判断里的零件，或者复杂的多步骤、多特征零件时，Agent 应该先做建模策略规划，再生成 Feature Plan，最后由编译器生成 primitive：
 
 ```text
 用户自然语言需求
--> 提取主形体、功能特征、关键尺寸、制造语义
+-> 提取零件功能、使用场景、装配/配合关系、关键尺寸、制造语义
 -> 判断 dominant geometry：板类、轴类、壳体、管路、过渡体、装配体等
--> 拆解为可组合特征：拉伸、切除、旋转、扫描、放样、阵列、镜像、面引用等
+-> 拆解为有工程意图的功能特征：安装、定位、配合、密封、承载、导向、避让、减重、加强等
+-> 为每个功能特征选择建模方法：拉伸、切除、旋转、扫描、放样、阵列、镜像、面引用等
+-> 为每个建模方法选择对应草图策略：闭合轮廓、半剖轮廓、路径+截面、有序截面、引用边/等距边等
 -> 比较 2-3 个候选建模方案
 -> 按工程标准选择最简洁、最可维护、最稳定的方案
--> 生成 Primitive DSL / CAD JSON
+-> 生成 Feature Plan
+-> 编译为 Primitive DSL / CAD JSON
 -> 执行、验证、导出
 ```
 
@@ -449,12 +593,16 @@ Agent 面对自然语言 CAD 需求时，应该：
 - 特征树是否清晰、可读、可维护。
 - 草图是否容易完全定义。
 - 关键尺寸是否方便后续修改。
+- 特征拆分是否反映零件的功能作用和配合关系。
+- 草图策略是否和选定的建模命令匹配。
 - 是否符合真实工程建模习惯和制造语义。
 - 是否减少脆弱引用和偶然几何。
 - 是否能被当前 SolidWorks executor 稳定执行。
 - 是否能清楚解释为什么这样建模。
 
-后续更推荐增加 `strategy_planner` 或 `modeling_strategy` 元数据层，而不是不断往 Skill 里堆更多零件名称判断。
+当前已经有轻量级 `strategy_planner` / `modeling_strategy` 元数据层，以及 `feature_plan.v1` 中间层。后续自然语言零件建模应先经过策略选择和 Feature Plan，再编译成 Primitive DSL；不要继续把更多零件名称判断堆进 Skill，也不要新增“某某零件生成器”作为主要扩展方式。正确扩展方向是增加可复用 feature kind 和 Feature Plan compiler 规则。
+
+后续优化重点不是让用户说出 CAD 命令，而是让 Agent 通过功能语义选择命令。只有当功能、使用场景或配合语义不足以判断建模方式时，Agent 才应该追问用户，例如“这个槽是密封槽还是避让槽”“这个孔是定位销孔还是螺栓安装孔”“这个圆角是去锐边还是应力过渡”。
 
 ### 13.2 必须支持已有零件的增量修改建模
 

@@ -67,6 +67,39 @@ Do not use `fixed` to hide missing design intent. Use this order:
 
 For splines, fit-point dimensions and endpoint constraints are the design intent. `fully_define_sketch` is only for residual SolidWorks spline degrees of freedom such as handles or curve shape. Pass a fixed `datum` point and keep `relation_mask=1023`.
 
+## Driving Dimension Policy
+
+Fully constrained does not mean every endpoint should be dimensioned. This rule applies to all feature-driving sketches, not only long slots. Prefer the smallest set of driving dimensions that captures design intent:
+
+1. Anchor one datum, center point, centerline, or construction reference.
+2. Use geometric relations for shape: horizontal, vertical, coincident, tangent, equal radius, symmetry, pierce, and pattern relations.
+3. Add only the dimensions an engineer would edit: overall size, offset, spacing, diameter/radius, depth, angle, or count.
+4. Avoid dimensioning every sketch endpoint back to the origin. That often creates redundant constraints, and SolidWorks may display extra gray driven dimensions.
+5. If `validate_fully_constrained` only passes after adding many reference dimensions, treat that as a signal to add a better primitive or relation, not as the final production sketch strategy.
+
+Use these feature-specific driving dimensions:
+
+- Center rectangle / base plate: center or datum, length, width; use horizontal/vertical relations for edges.
+- Circle / hole: center location, diameter; use pattern or symmetry relations for repeated holes rather than locating every copy independently when the pattern is the intent.
+- Slot / obround hole: slot center or pattern center, slot length, slot width/radius, angle, spacing or symmetry.
+- Polygon: center, radius or across-flats size, side count, orientation angle; use equal-side/regular-polygon construction when available.
+- Spline: fit-point dimensions only at design-critical points, plus endpoint, tangent, or curvature relations; avoid over-dimensioning every handle unless required by the design.
+- Offset or converted contours: source face/edge reference, offset distance, cleanup rules, and final profile dimensions; do not keep redundant converted geometry as production-driving dimensions unless it is the design intent.
+- Rib or boss sketches: target face/datum, section size, height/depth, thickness, and center/edge offset; avoid endpoint-by-endpoint positioning.
+- Revolve half-sections: axial length, diameters/radii, shoulder positions, groove width/depth; use a single axis and horizontal/vertical step relations.
+- Sweep paths: path endpoints, key radii, tangent/curvature constraints, and profile pierce relation; do not dimension every sampled point on a curve.
+- Loft sections: section plane offsets, section sizes, and connection references; do not over-dimension every profile vertex when a standard shape parameter is the design driver.
+
+For a straight slot / long obround hole, the preferred production intent is:
+
+- slot center or slot pattern center from datum;
+- overall slot length or center-to-center straight length;
+- slot width/radius;
+- slot angle when not horizontal/vertical;
+- slot spacing or symmetry relation for multiple slots.
+
+Do not dimension all four endpoints and both arc centers unless it is a temporary fallback to prove SolidWorks execution. A cleaner executor should use slot center, length, width, spacing, and geometric relations so the sketch has fewer driven dimensions and is easier to edit.
+
 ## Convert And Offset Pattern
 
 Use this pattern for grooves, lips, gasket paths, and inset rims derived from an existing model face:

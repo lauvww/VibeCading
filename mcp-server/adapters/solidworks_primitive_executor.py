@@ -556,20 +556,51 @@ class SolidWorksPrimitiveExecutor:
             else:
                 raise BackendUnavailable(f"SolidWorks failed to constrain dimensioned straight slot: {operation.id}")
 
+        left_center = _maybe_call(left_arc.GetCenterPoint2)
+        right_center = _maybe_call(right_arc.GetCenterPoint2)
+        if abs(uy) <= 1e-9:
+            for first, second, relation in [
+                (left_center, right_center, "sgHORIZONTAL2D"),
+                (top, "unused", "sgHORIZONTAL2D"),
+                (bottom, "unused", "sgHORIZONTAL2D"),
+            ]:
+                relation_entities = [first] if second == "unused" else [first, second]
+                if self._add_relation_to_entities(relation_entities, relation):
+                    relation_count += 1
+        elif abs(ux) <= 1e-9:
+            for first, second, relation in [
+                (left_center, right_center, "sgVERTICAL2D"),
+                (top, "unused", "sgVERTICAL2D"),
+                (bottom, "unused", "sgVERTICAL2D"),
+            ]:
+                relation_entities = [first] if second == "unused" else [first, second]
+                if self._add_relation_to_entities(relation_entities, relation):
+                    relation_count += 1
+
         reference = self._sketch_origin_reference(sketch_id)
         dimensions_added = 0
         extra_relations = 0
         for point, coordinates in [
-            (_maybe_call(top.GetStartPoint2), p1),
-            (_maybe_call(top.GetEndPoint2), p2),
-            (_maybe_call(bottom.GetStartPoint2), p3),
-            (_maybe_call(bottom.GetEndPoint2), p4),
-            (_maybe_call(left_arc.GetCenterPoint2), start_center),
-            (_maybe_call(right_arc.GetCenterPoint2), end_center),
+            (left_center, start_center),
+            (right_center, end_center),
         ]:
             dim_count, rel_count = self._define_point_from_reference(reference, point, coordinates[0], coordinates[1])
             dimensions_added += dim_count
             extra_relations += rel_count
+
+        for arc, center, x_sign in [
+            (left_arc, start_center, -1),
+            (right_arc, end_center, 1),
+        ]:
+            dimension_position = (
+                self._mm_to_m(center[0] + x_sign * (radius + 8)),
+                self._mm_to_m(center[1] + radius + 8),
+                0,
+            )
+            if not self._dimension_entity(arc, *dimension_position):
+                raise BackendUnavailable(f"SolidWorks failed to dimension straight slot radius: {operation.id}")
+            dimensions_added += 1
+            self.dimensions_added += 1
 
         self.relations_added += relation_count
         self.geometry[operation.id] = entities
@@ -577,6 +608,8 @@ class SolidWorksPrimitiveExecutor:
         self.geometry[f"{operation.id}_right_arc"] = right_arc
         self.geometry[f"{operation.id}_bottom"] = bottom
         self.geometry[f"{operation.id}_left_arc"] = left_arc
+        self.geometry[f"{operation.id}_left_center"] = left_center
+        self.geometry[f"{operation.id}_right_center"] = right_center
         self._register_sketch_geometry(sketch_id, entities)
         return {
             "operation_id": operation.id,
@@ -585,6 +618,7 @@ class SolidWorksPrimitiveExecutor:
             "width": width,
             "angle": float(operation.parameters.get("angle", 0)),
             "definition_mode": "dimensioned_geometry",
+            "dimension_strategy": "minimal_driving_dimensions",
             "relations_added": relation_count + extra_relations,
             "dimensions_added": dimensions_added,
         }
@@ -1544,6 +1578,10 @@ class SolidWorksPrimitiveExecutor:
         depth = self._mm_to_m(operation.parameters["depth"])
         reverse_direction = bool(operation.parameters.get("reverse_direction", True))
         flip_side_to_cut = bool(operation.parameters.get("flip_side_to_cut", False))
+        draft_angle = operation.parameters.get("draft_angle")
+        use_draft = draft_angle is not None
+        draft_angle_rad = math.radians(float(draft_angle)) if use_draft else 0
+        draft_outward = bool(operation.parameters.get("draft_outward", False))
         self.sketch_manager.InsertSketch(True)
         feature = self.feature_manager.FeatureCut3(
             True,
@@ -1553,11 +1591,11 @@ class SolidWorksPrimitiveExecutor:
             0,
             depth,
             0,
+            use_draft,
             False,
+            draft_outward,
             False,
-            False,
-            False,
-            0,
+            draft_angle_rad,
             0,
             False,
             False,
@@ -1577,7 +1615,7 @@ class SolidWorksPrimitiveExecutor:
             raise BackendUnavailable(f"SolidWorks failed to create cut extrusion: {operation.id}")
         feature_name = self._register_feature(operation.id, feature)
         self.active_sketch_id = None
-        return {
+        result: dict[str, object] = {
             "operation_id": operation.id,
             "operation_type": operation.type,
             "depth": float(operation.parameters["depth"]),
@@ -1585,7 +1623,12 @@ class SolidWorksPrimitiveExecutor:
             "flip_side_to_cut": flip_side_to_cut,
             "feature_id": operation.id,
             "feature_name": feature_name,
+            "draft_angle": float(draft_angle) if use_draft else None,
+            "draft_outward": draft_outward if use_draft else None,
         }
+        if "thread_metadata" in operation.parameters:
+            result["thread_metadata"] = dict(operation.parameters["thread_metadata"])
+        return result
 
     def _revolve(self, operation: PrimitiveOperation, *, is_cut: bool) -> dict[str, object]:
         sketch_id = str(operation.parameters["sketch"])
