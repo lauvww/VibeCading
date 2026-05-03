@@ -7,6 +7,7 @@ from core.validators import validate_job
 
 
 def mounting_plate_constraint_plan(spec: dict[str, Any]) -> dict[str, object]:
+    """Legacy compatibility diagnostic for mounting_plate regression examples."""
     job = CadJob.from_dict(spec)
     validate_job(job)
     hole_count = len(job.part.holes)
@@ -28,4 +29,3 @@ def mounting_plate_constraint_plan(spec: dict[str, Any]) -> dict[str, object]:
         },
         "target_status": "fully_constrained",
     }
-

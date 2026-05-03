@@ -9,6 +9,7 @@ from adapters.freecad_adapter import FreeCadAdapter
 from adapters.preview_adapter import PreviewAdapter
 from adapters.solidworks_com import SolidWorksComAdapter
 from core.dsl import CadJob
+from core.template_compiler import LEGACY_COMPAT_JOB_KINDS, compile_to_primitive_job
 from core.validators import validate_job
 
 
@@ -34,8 +35,25 @@ def _select_backend(name: str, job_kind: str):
     return PreviewAdapter()
 
 
+def _normalize_job_for_execution(job: CadJob, backend_name: str) -> CadJob:
+    # FreeCAD still only implements the narrow legacy mounting_plate path. Every other
+    # backend should execute through primitive_part to keep one main modeling pipeline.
+    if backend_name == "freecad":
+        return job
+    if job.kind in LEGACY_COMPAT_JOB_KINDS:
+        return compile_to_primitive_job(job)
+    return job
+
+
 def _artifact_status(paths: list[str]) -> dict[str, bool]:
     return {path: Path(path).exists() and Path(path).stat().st_size > 0 for path in paths}
+
+
+def _unique_output_dir(base_dir: Path) -> Path:
+    if not base_dir.exists():
+        return base_dir
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S-%f")
+    return base_dir.with_name(f"{base_dir.name}-{stamp}")
 
 
 def _infer_completed_exports(paths: list[str]) -> list[str]:
@@ -89,17 +107,18 @@ def run_job(job: CadJob, output_root: Path, backend: str | None = None) -> dict[
     validate_job(job)
     selected = backend or job.backend
     started_at = datetime.now(timezone.utc).isoformat()
-    output_dir = output_root / job.safe_name
+    output_dir = _unique_output_dir(output_root / job.safe_name)
     output_dir.mkdir(parents=True, exist_ok=True)
     adapter = _select_backend(selected, job.kind)
+    execution_job = _normalize_job_for_execution(job, getattr(adapter, "name", selected))
 
     try:
-        if job.kind == "mounting_plate":
+        if execution_job.kind == "primitive_part":
+            result = adapter.run_primitive_part(execution_job, output_dir)
+        elif job.kind == "mounting_plate":
             result = adapter.run_mounting_plate(job, output_dir)
         elif job.kind == "feature_part":
             result = adapter.run_feature_part(job, output_dir)
-        elif job.kind == "primitive_part":
-            result = adapter.run_primitive_part(job, output_dir)
         else:
             raise ValueError(f"Unsupported CAD job kind: {job.kind}")
     except BackendUnavailable as exc:

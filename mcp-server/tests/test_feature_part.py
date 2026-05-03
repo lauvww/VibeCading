@@ -82,6 +82,7 @@ class FeaturePartTests(unittest.TestCase):
             self.assertFalse(summary["cad_outputs_complete"])
             self.assertEqual(summary["unsupported_exports"], ["step"])
             saved = json.loads(Path(str(summary["summary_path"])).read_text(encoding="utf-8"))
+            self.assertEqual(saved["kind"], "feature_part")
             self.assertEqual(saved["metadata"]["source_kind"], "feature_part")
             self.assertIn("add_polyline", saved["metadata"]["primitive_operation_types"])
         finally:

@@ -77,6 +77,7 @@ class MountingPlateTests(unittest.TestCase):
             self.assertEqual(summary["unsupported_exports"], ["step"])
             self.assertTrue(Path(str(summary["summary_path"])).exists())
             saved = json.loads(Path(str(summary["summary_path"])).read_text(encoding="utf-8"))
+            self.assertEqual(saved["kind"], "mounting_plate")
             self.assertEqual(saved["backend"], "preview")
             self.assertEqual(saved["metadata"]["source_kind"], "mounting_plate")
             self.assertIn("add_center_rectangle", saved["metadata"]["primitive_operation_types"])

@@ -14,6 +14,7 @@ if str(SERVER_ROOT) not in sys.path:
 from core.dsl import CadJob, load_job
 from core.job_runner import run_job
 from core.nl_job_planner import draft_feature_plan_from_natural_language, draft_primitive_job_from_natural_language
+from core.part_context import build_native_edit_part_context, build_part_context, load_part_context, write_part_context
 from core.strategy_planner import plan_modeling_strategy_dict
 from core.validators import validate_job
 from adapters.solidworks_com import SolidWorksComAdapter
@@ -31,7 +32,7 @@ _configure_stdio()
 
 
 def create_mounting_plate(spec: dict[str, Any], output_root: str | None = None, backend: str = "auto") -> dict[str, Any]:
-    """Run a mounting plate CAD job from an already parsed JSON object."""
+    """Run a legacy compatibility mounting_plate job from an already parsed JSON object."""
     job = CadJob.from_dict(spec)
     validate_job(job)
     root = Path(output_root) if output_root else PROJECT_ROOT / "outputs" / "jobs"
@@ -39,7 +40,7 @@ def create_mounting_plate(spec: dict[str, Any], output_root: str | None = None, 
 
 
 def create_feature_part(spec: dict[str, Any], output_root: str | None = None, backend: str = "auto") -> dict[str, Any]:
-    """Run a generic feature-part CAD job from an already parsed JSON object."""
+    """Run a legacy compatibility feature_part job from an already parsed JSON object."""
     job = CadJob.from_dict(spec)
     validate_job(job)
     if job.kind != "feature_part":
@@ -63,14 +64,18 @@ def plan_modeling_strategy(request: str) -> dict[str, Any]:
     return plan_modeling_strategy_dict(request)
 
 
-def draft_primitive_job(request: str, export_formats: list[str] | None = None) -> dict[str, Any]:
+def draft_primitive_job(
+    request: str,
+    export_formats: list[str] | None = None,
+    context_file: str | None = None,
+) -> dict[str, Any]:
     """Draft a primitive CAD job from natural language without running CAD."""
-    return draft_primitive_job_from_natural_language(request, export_formats=export_formats)
+    return draft_primitive_job_from_natural_language(request, export_formats=export_formats, context_file=context_file)
 
 
-def draft_feature_plan(request: str) -> dict[str, Any]:
+def draft_feature_plan(request: str, context_file: str | None = None) -> dict[str, Any]:
     """Draft a feature plan from natural language without compiling Primitive DSL."""
-    return draft_feature_plan_from_natural_language(request)
+    return draft_feature_plan_from_natural_language(request, context_file=context_file)
 
 
 def _cmd_validate(args: argparse.Namespace) -> int:
@@ -112,8 +117,24 @@ def _request_from_args(args: argparse.Namespace) -> str:
 
 def _cmd_plan_features(args: argparse.Namespace) -> int:
     request = _request_from_args(args)
-    result = draft_feature_plan_from_natural_language(request)
+    result = draft_feature_plan_from_natural_language(request, context_file=args.context_file)
     print(json.dumps(result, indent=2, ensure_ascii=False))
+    return 0 if result["ready_for_compilation"] else 2
+
+
+def _cmd_plan_edit(args: argparse.Namespace) -> int:
+    request = _request_from_args(args)
+    result = draft_feature_plan_from_natural_language(request, context_file=args.context_file)
+    payload = {
+        "ok": result["ready_for_compilation"],
+        "request": result["request"],
+        "requested_feature_plan": result.get("requested_feature_plan"),
+        "edit_plan": result.get("edit_plan"),
+        "edit_dsl": result.get("edit_dsl"),
+        "feature_plan_ready": result["ready_for_compilation"],
+        "feature_plan_questions": list(result["feature_plan"].get("questions", [])),
+    }
+    print(json.dumps(payload, indent=2, ensure_ascii=False))
     return 0 if result["ready_for_compilation"] else 2
 
 
@@ -125,6 +146,7 @@ def _cmd_draft_job(args: argparse.Namespace) -> int:
         part_name=args.part_name,
         material=args.material,
         export_formats=args.export_formats,
+        context_file=args.context_file,
     )
     if args.output and result.get("job"):
         output_path = Path(args.output)
@@ -149,6 +171,7 @@ def _cmd_run_nl(args: argparse.Namespace) -> int:
         part_name=args.part_name,
         material=args.material,
         export_formats=args.export_formats,
+        context_file=args.context_file,
     )
     if not draft["ready_for_execution"] or not draft.get("job"):
         print(json.dumps(draft, indent=2, ensure_ascii=False))
@@ -156,10 +179,37 @@ def _cmd_run_nl(args: argparse.Namespace) -> int:
     job = CadJob.from_dict(draft["job"])
     validate_job(job)
     result = run_job(job, output_root=Path(args.output_root), backend=args.backend)
+    existing_part_context = load_part_context(args.context_file) if args.context_file else None
+    part_context = build_part_context(
+        job=job,
+        feature_plan=draft["feature_plan"],
+        request=request,
+        strategy=draft["strategy"],
+        summary=result,
+        existing_part_context=existing_part_context,
+        edit_plan=draft.get("edit_plan"),
+        edit_dsl=draft.get("edit_dsl"),
+    )
+    part_context_path = write_part_context(Path(result["output_dir"]) / "part_context.json", part_context)
+    result["part_context_path"] = str(part_context_path)
+    result["part_context"] = part_context
+    summary_path = Path(result["summary_path"])
+    try:
+        summary_data = json.loads(summary_path.read_text(encoding="utf-8"))
+        summary_data["part_context_path"] = str(part_context_path)
+        summary_data.setdefault("metadata", {})["part_context"] = part_context
+        summary_path.write_text(json.dumps(summary_data, indent=2, ensure_ascii=False), encoding="utf-8")
+    except Exception:
+        pass
+    result["edit_plan"] = draft.get("edit_plan")
+    result["edit_dsl"] = draft.get("edit_dsl")
     result["natural_language"] = {
         "request": request,
         "strategy": draft["strategy"],
+        "requested_feature_plan": draft.get("requested_feature_plan"),
         "feature_plan": draft["feature_plan"],
+        "edit_plan": draft.get("edit_plan"),
+        "edit_dsl": draft.get("edit_dsl"),
         "parsed_parameters": draft["parsed_parameters"],
         "warnings": draft["warnings"],
     }
@@ -197,29 +247,89 @@ def _cmd_serve(_: argparse.Namespace) -> int:
         return plan_modeling_strategy(request=request)
 
     @app.tool()
-    def draft_feature_plan_tool(request: str) -> dict[str, Any]:
-        return draft_feature_plan(request=request)
+    def draft_feature_plan_tool(request: str, context_file: str | None = None) -> dict[str, Any]:
+        return draft_feature_plan(request=request, context_file=context_file)
 
     @app.tool()
-    def draft_primitive_job_tool(request: str, export_formats: list[str] | None = None) -> dict[str, Any]:
-        return draft_primitive_job(request=request, export_formats=export_formats)
+    def draft_edit_plan_tool(request: str, context_file: str) -> dict[str, Any]:
+        return draft_feature_plan(request=request, context_file=context_file)
+
+    @app.tool()
+    def inspect_solidworks_feature_tree_tool(
+        file_path: str | None = None,
+        use_active_doc: bool = False,
+        visible: bool = True,
+    ) -> dict[str, Any]:
+        adapter = SolidWorksComAdapter()
+        return adapter.inspect_feature_tree(file_path=file_path, use_active_doc=use_active_doc, visible=visible)
+
+    @app.tool()
+    def native_edit_solidworks_feature_tree_tool(
+        file_path: str,
+        selector: dict[str, Any],
+        operation: str,
+        output_dir: str,
+        export_formats: list[str] | None = None,
+        dimension_name: str | None = None,
+        value_mm: float | None = None,
+        visible: bool = True,
+    ) -> dict[str, Any]:
+        adapter = SolidWorksComAdapter()
+        return adapter.native_edit_feature_tree(
+            file_path=file_path,
+            selector=selector,
+            operation=operation,
+            output_dir=Path(output_dir),
+            export_formats=export_formats,
+            dimension_name=dimension_name,
+            value_mm=value_mm,
+            visible=visible,
+        )
+
+    @app.tool()
+    def draft_primitive_job_tool(
+        request: str,
+        export_formats: list[str] | None = None,
+        context_file: str | None = None,
+    ) -> dict[str, Any]:
+        return draft_primitive_job(request=request, export_formats=export_formats, context_file=context_file)
 
     @app.tool()
     def run_natural_language_part_tool(
         request: str,
         backend: str = "auto",
         export_formats: list[str] | None = None,
+        context_file: str | None = None,
     ) -> dict[str, Any]:
-        draft = draft_primitive_job_from_natural_language(request, export_formats=export_formats)
+        draft = draft_primitive_job_from_natural_language(request, export_formats=export_formats, context_file=context_file)
         if not draft["ready_for_execution"] or not draft.get("job"):
             return draft
         job = CadJob.from_dict(draft["job"])
         validate_job(job)
         result = run_job(job, output_root=PROJECT_ROOT / "outputs" / "jobs", backend=backend)
+        existing_part_context = load_part_context(context_file) if context_file else None
+        part_context = build_part_context(
+            job=job,
+            feature_plan=draft["feature_plan"],
+            request=request,
+            strategy=draft["strategy"],
+            summary=result,
+            existing_part_context=existing_part_context,
+            edit_plan=draft.get("edit_plan"),
+            edit_dsl=draft.get("edit_dsl"),
+        )
+        part_context_path = write_part_context(Path(result["output_dir"]) / "part_context.json", part_context)
+        result["part_context_path"] = str(part_context_path)
+        result["part_context"] = part_context
+        result["edit_plan"] = draft.get("edit_plan")
+        result["edit_dsl"] = draft.get("edit_dsl")
         result["natural_language"] = {
             "request": request,
             "strategy": draft["strategy"],
+            "requested_feature_plan": draft.get("requested_feature_plan"),
             "feature_plan": draft["feature_plan"],
+            "edit_plan": draft.get("edit_plan"),
+            "edit_dsl": draft.get("edit_dsl"),
             "parsed_parameters": draft["parsed_parameters"],
             "warnings": draft["warnings"],
         }
@@ -234,6 +344,84 @@ def _cmd_sw_check(args: argparse.Namespace) -> int:
     result = adapter.check_connection(visible=not args.hidden)
     print(json.dumps(result, indent=2, ensure_ascii=False))
     return 0
+
+
+def _cmd_sw_inspect_tree(args: argparse.Namespace) -> int:
+    adapter = SolidWorksComAdapter()
+    result = adapter.inspect_feature_tree(
+        file_path=args.file,
+        use_active_doc=args.active or not args.file,
+        visible=not args.hidden,
+    )
+    if args.output:
+        output_path = Path(args.output)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(json.dumps(result, indent=2, ensure_ascii=False), encoding="utf-8")
+        result["output_path"] = str(output_path)
+    print(json.dumps(result, indent=2, ensure_ascii=False))
+    return 0
+
+
+def _cmd_sw_native_edit(args: argparse.Namespace) -> int:
+    context = load_part_context(args.context_file)
+    source_file = Path(args.file).resolve()
+    context_output_dir = Path(str(context.get("output_dir", ""))).resolve()
+    if not str(source_file).startswith(str(context_output_dir)):
+        raise ValueError("First-stage native SolidWorks tree edits are limited to Vibe-generated parts from the provided part_context.")
+
+    revision_index = int(context.get("revision_index", 1)) + 1
+    base_job_id = str(context.get("job_id", "native-edit")).strip() or "native-edit"
+    native_job_id = f"{base_job_id}-native-r{revision_index}"
+    output_dir = Path(args.output_root) / native_job_id
+    selector = {
+        key: value
+        for key, value in {
+            "feature_name": args.feature_name,
+            "feature_type": args.feature_type,
+            "tree_index": args.tree_index,
+            "depth": args.depth,
+            "parent_feature_name": args.parent_feature_name,
+            "is_subfeature": args.is_subfeature,
+        }.items()
+        if value is not None
+    }
+    if not selector:
+        raise ValueError("sw-native-edit requires at least one selector field, such as --feature-name or --tree-index.")
+
+    adapter = SolidWorksComAdapter()
+    result = adapter.native_edit_feature_tree(
+        file_path=source_file,
+        selector=selector,
+        operation=args.operation,
+        output_dir=output_dir,
+        export_formats=args.export_formats,
+        dimension_name=args.dimension_name,
+        parameter_role=args.parameter_role,
+        native_feature_bindings=context.get("native_feature_bindings"),
+        value_mm=args.value_mm,
+        visible=not args.hidden,
+    )
+    result["job_id"] = native_job_id
+    result["source_context_file"] = str(Path(args.context_file).resolve())
+    native_context = build_native_edit_part_context(
+        existing_part_context=context,
+        summary=result,
+        job_id=native_job_id,
+        operation=args.operation,
+    )
+    native_context_path = write_part_context(Path(result["output_dir"]) / "part_context.json", native_context)
+    result["part_context_path"] = str(native_context_path)
+    result["part_context"] = native_context
+    summary_path = Path(result["summary_path"])
+    try:
+        summary_data = json.loads(summary_path.read_text(encoding="utf-8"))
+        summary_data["part_context_path"] = str(native_context_path)
+        summary_data["part_context"] = native_context
+        summary_path.write_text(json.dumps(summary_data, indent=2, ensure_ascii=False), encoding="utf-8")
+    except Exception:
+        pass
+    print(json.dumps(result, indent=2, ensure_ascii=False))
+    return 0 if result["ok"] else 2
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -264,7 +452,17 @@ def build_parser() -> argparse.ArgumentParser:
     )
     plan_features_parser.add_argument("request", nargs="*", help="Natural-language CAD request")
     plan_features_parser.add_argument("--input-file", help="Read additional request text from a UTF-8 file")
+    plan_features_parser.add_argument("--context-file", help="Read a part_context JSON file for rebuild / append planning")
     plan_features_parser.set_defaults(func=_cmd_plan_features)
+
+    plan_edit_parser = subparsers.add_parser(
+        "plan-edit",
+        help="Draft an edit plan from a natural-language CAD change request and an existing part_context",
+    )
+    plan_edit_parser.add_argument("request", nargs="*", help="Natural-language CAD change request")
+    plan_edit_parser.add_argument("--input-file", help="Read additional request text from a UTF-8 file")
+    plan_edit_parser.add_argument("--context-file", required=True, help="Read a part_context JSON file for edit planning")
+    plan_edit_parser.set_defaults(func=_cmd_plan_edit)
 
     draft_job_parser = subparsers.add_parser(
         "draft-job",
@@ -276,6 +474,7 @@ def build_parser() -> argparse.ArgumentParser:
     draft_job_parser.add_argument("--part-name")
     draft_job_parser.add_argument("--material")
     draft_job_parser.add_argument("--export-formats", nargs="+", default=["pdf", "svg", "step"])
+    draft_job_parser.add_argument("--context-file", help="Read a part_context JSON file for rebuild / append drafting")
     draft_job_parser.add_argument("--output", help="Write the generated primitive_part JSON to this path")
     draft_job_parser.add_argument("--job-only", action="store_true", help="Print only the generated CAD job JSON")
     draft_job_parser.set_defaults(func=_cmd_draft_job)
@@ -292,6 +491,7 @@ def build_parser() -> argparse.ArgumentParser:
     run_nl_parser.add_argument("--part-name")
     run_nl_parser.add_argument("--material")
     run_nl_parser.add_argument("--export-formats", nargs="+", default=["pdf", "svg", "step"])
+    run_nl_parser.add_argument("--context-file", help="Read a part_context JSON file for rebuild / append execution")
     run_nl_parser.set_defaults(func=_cmd_run_nl)
 
     serve_parser = subparsers.add_parser("serve", help="Start the optional MCP server")
@@ -300,6 +500,31 @@ def build_parser() -> argparse.ArgumentParser:
     sw_check_parser = subparsers.add_parser("sw-check", help="Check SolidWorks COM and template availability")
     sw_check_parser.add_argument("--hidden", action="store_true", help="Do not force SolidWorks visible")
     sw_check_parser.set_defaults(func=_cmd_sw_check)
+
+    sw_inspect_parser = subparsers.add_parser("sw-inspect-tree", help="Inspect a SolidWorks feature tree in read-only mode")
+    sw_inspect_parser.add_argument("--file", help="Open and inspect a saved SolidWorks document")
+    sw_inspect_parser.add_argument("--active", action="store_true", help="Inspect the current active SolidWorks document")
+    sw_inspect_parser.add_argument("--hidden", action="store_true", help="Do not force SolidWorks visible")
+    sw_inspect_parser.add_argument("--output", help="Write the inspection JSON to this path")
+    sw_inspect_parser.set_defaults(func=_cmd_sw_inspect_tree)
+
+    sw_native_edit_parser = subparsers.add_parser("sw-native-edit", help="Apply a first-stage in-place SolidWorks tree edit and save a new revision")
+    sw_native_edit_parser.add_argument("--file", required=True, help="Saved SolidWorks part to edit in place")
+    sw_native_edit_parser.add_argument("--context-file", required=True, help="part_context JSON for the Vibe-generated source part")
+    sw_native_edit_parser.add_argument("--operation", required=True, choices=["suppress_feature", "unsuppress_feature", "update_dimension"])
+    sw_native_edit_parser.add_argument("--feature-name")
+    sw_native_edit_parser.add_argument("--feature-type")
+    sw_native_edit_parser.add_argument("--tree-index", type=int)
+    sw_native_edit_parser.add_argument("--depth", type=int)
+    sw_native_edit_parser.add_argument("--parent-feature-name")
+    sw_native_edit_parser.add_argument("--is-subfeature", action="store_true")
+    sw_native_edit_parser.add_argument("--dimension-name", help="Dimension name such as D1@底板草图 for update_dimension")
+    sw_native_edit_parser.add_argument("--parameter-role", help="Semantic parameter role such as length, width, depth, thickness")
+    sw_native_edit_parser.add_argument("--value-mm", type=float, help="Target value in mm for update_dimension")
+    sw_native_edit_parser.add_argument("--hidden", action="store_true", help="Do not force SolidWorks visible")
+    sw_native_edit_parser.add_argument("--output-root", default=str(PROJECT_ROOT / "outputs" / "jobs"))
+    sw_native_edit_parser.add_argument("--export-formats", nargs="+", default=["sldprt", "step"])
+    sw_native_edit_parser.set_defaults(func=_cmd_sw_native_edit)
 
     return parser
 

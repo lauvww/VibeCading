@@ -190,7 +190,7 @@ STRATEGY_RULES: tuple[StrategyRule, ...] = (
             "bore",
             "annular groove",
         ),
-        reason="请求接近车削/回转零件，半剖轮廓旋转后再用旋转切除表达孔、槽和退刀结构，后续改尺寸更稳定。",
+        reason="请求以 rotational 主导几何为主，半剖轮廓旋转后再用旋转切除表达孔、槽和退刀结构，后续改尺寸更稳定。",
         alternatives=("stacked_cylindrical_extrudes", "extrude_circles_from_multiple_planes"),
         priority=80,
         assumptions=("front_plane_half_section", "axis_defined_by_profile_segment"),
@@ -318,7 +318,7 @@ STRATEGY_RULES: tuple[StrategyRule, ...] = (
             "slot",
             "hole",
         ),
-        reason="请求以板、块、支架、孔槽等棱柱类几何为主，优先用拉伸主实体和拉伸切除表达。",
+        reason="请求以 prismatic 主导几何为主，优先用拉伸主实体和拉伸切除表达。",
         alternatives=("revolve_for_non_rotational_body", "large_single_unreadable_sketch"),
         priority=50,
         assumptions=("top_face_for_secondary_cut_sketches",),
@@ -417,14 +417,48 @@ def _build_questions(rule: StrategyRule, request: str, collapsed_text: str, dime
 
     mentions_obround_slot = _has_any(collapsed_text, ("长圆孔", "腰形孔", "straight slot", "obround"))
     mentions_hole = _has_any(collapsed_text, ("孔", "hole", "bore", "中心孔", "螺纹孔"))
+    mentions_non_slot_hole = mentions_hole and not (
+        mentions_obround_slot
+        and not _has_any(collapsed_text, ("中心孔", "四角孔", "安装孔", "螺栓孔", "定位孔", "销孔", "沉头孔", "沉孔", "螺纹孔", "通孔"))
+    )
     has_hole_size = _has_any(collapsed_text, ("直径", "孔径", "m3", "m4", "m5", "m6", "m8", "m10", "diameter", "dia"))
+    has_explicit_hole_positions = bool(
+        re.search(
+            r"x\s*[:：=]?\s*-?\d+(?:\.\d+)?\s*[,，/\s]*y\s*[:：=]?\s*-?\d+(?:\.\d+)?",
+            request,
+            re.IGNORECASE,
+        )
+    ) or bool(
+        re.search(
+            r"(?:位置|坐标)[^。；;]{0,24}?\(\s*-?\d+(?:\.\d+)?\s*[,，]\s*-?\d+(?:\.\d+)?\s*\)",
+            request,
+            re.IGNORECASE,
+        )
+    )
     has_slot_size = mentions_obround_slot and _has_any(collapsed_text, ("槽长", "槽宽", "长度", "宽度", "长", "宽"))
-    if mentions_hole and not mentions_obround_slot and not has_hole_size:
+    if mentions_non_slot_hole and not mentions_obround_slot and not has_hole_size:
         questions.append("孔类特征需要孔径或螺纹规格，例如直径 6 mm 或 M6。")
 
+    hole_role_hits = {
+        "fastener": _has_any(collapsed_text, ("安装孔", "四角孔", "四角安装孔", "四个安装孔", "螺栓孔", "螺钉孔", "固定孔", "bolt", "screw", "fastener")),
+        "locating": _has_any(collapsed_text, ("定位孔", "销孔", "定位销")),
+        "threaded": _has_any(collapsed_text, ("螺纹孔", "螺纹", "攻丝")),
+        "bearing": _has_any(collapsed_text, ("轴承孔", "轴承座", "bearing")),
+        "routing": _has_any(collapsed_text, ("过线孔", "走线孔", "线缆孔", "cable", "routing")),
+        "lightening": _has_any(collapsed_text, ("减重孔", "轻量化孔", "lightening")),
+        "simple": _has_any(collapsed_text, ("通孔", "中心孔", "中间孔")),
+    }
+    if mentions_non_slot_hole and not any(hole_role_hits.values()):
+        questions.append("请说明这个孔的工程作用：安装孔、定位孔、螺纹孔、轴承孔、过线孔还是减重孔。")
+    if hole_role_hits["locating"] and not _has_any(collapsed_text, ("公差", "配合", "h7", "h8", "g6", "过盈", "间隙")):
+        questions.append("定位孔需要实际孔径和配合/公差，例如 Φ6H7 配定位销。")
+    if hole_role_hits["bearing"] and not _has_any(collapsed_text, ("公差", "配合", "h7", "n6", "p6", "过盈", "间隙", "轴承型号", "外径")):
+        questions.append("轴承孔需要轴承型号或配合孔径/公差，例如 6201 外径 32，孔 H7。")
+
     if (
-        mentions_hole
+        mentions_non_slot_hole
         and not (mentions_obround_slot and has_slot_size)
+        and not has_explicit_hole_positions
         and not _has_any(collapsed_text, ("中心", "四角", "孔距", "坐标", "分布", "阵列", "同心", "center", "pattern", "pitch"))
     ):
         questions.append("请说明孔的位置基准，例如中心、四角孔距、坐标或阵列间距。")
@@ -483,7 +517,8 @@ def plan_modeling_strategy(request: str) -> StrategyPlan:
 
     has_prismatic_dominant = _has_any(collapsed_text, PRISMATIC_DOMINANT_KEYWORDS)
     has_rotational_dominant = _has_any(collapsed_text, ROTATIONAL_DOMINANT_KEYWORDS)
-    if chosen_rule.name == "revolve_then_cut_revolve" and has_prismatic_dominant and not has_rotational_dominant:
+    bearing_hole_on_plate = has_prismatic_dominant and _has_any(collapsed_text, ("轴承孔", "轴承座", "bearing"))
+    if chosen_rule.name == "revolve_then_cut_revolve" and has_prismatic_dominant and (not has_rotational_dominant or bearing_hole_on_plate):
         prismatic_candidates = [
             (rule, hits, score)
             for rule, hits, score in scored
@@ -510,30 +545,35 @@ def plan_modeling_strategy(request: str) -> StrategyPlan:
     if questions:
         confidence = max(0.25, confidence - min(0.2, len(questions) * 0.05))
 
+    recommended_primitives = list(chosen_rule.recommended_primitives)
+    selection_reason = chosen_rule.reason
+    assumptions = list(chosen_rule.assumptions)
+    if _has_any(collapsed_text, ("孔向导", "hole wizard", "holewizard")):
+        recommended_primitives = [
+            "hole_wizard" if primitive == "cut_extrude" else primitive
+            for primitive in recommended_primitives
+        ]
+        if "hole_wizard" not in recommended_primitives:
+            recommended_primitives.append("hole_wizard")
+        selection_reason = f"{selection_reason} 孔类特征明确要求使用 SolidWorks Hole Wizard。"
+        assumptions.append("solidworks_hole_wizard_for_hole_features")
+
     return StrategyPlan(
         request=clean_request,
         intent=intent,
         dominant_geometry=chosen_rule.dominant_geometry,
         chosen_strategy=chosen_rule.name,
         recommended_job_kind="primitive_part",
-        recommended_primitives=list(chosen_rule.recommended_primitives),
+        recommended_primitives=recommended_primitives,
         alternatives_considered=alternatives,
-        selection_reason=chosen_rule.reason,
-        assumptions=list(chosen_rule.assumptions),
+        selection_reason=selection_reason,
+        assumptions=assumptions,
         questions=questions,
         confidence=round(confidence, 2),
         ready_for_primitive_dsl=not questions and intent == "part_modeling",
         signals={
             "matched_keywords": matched_keywords,
             "detected_dimensions": dimensions,
-            "candidate_scores": [
-                {
-                    "strategy": rule.name,
-                    "score": score,
-                    "matched_keywords": hits,
-                }
-                for rule, hits, score in scored
-            ],
         },
     )
 

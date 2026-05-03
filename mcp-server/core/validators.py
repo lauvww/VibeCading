@@ -131,6 +131,7 @@ PRIMITIVE_OPERATION_REQUIRED_PARAMS = {
     "cut_sweep": {"profile", "path"},
     "loft": {"profiles"},
     "cut_loft": {"profiles"},
+    "hole_wizard": {"target", "locations", "hole_type", "size"},
 }
 
 SWEEP_TWIST_CONTROL_ALIASES = {
@@ -623,6 +624,41 @@ def _validate_primitive_operation(operation: PrimitiveOperation) -> None:
                 raise ValidationError(f"{operation.id}.angle must be greater than 0 and smaller than 180.")
     elif operation.type in {"extrude", "cut_extrude"}:
         _require_positive(float(operation.parameters["depth"]), f"{operation.id}.depth")
+    elif operation.type == "hole_wizard":
+        _validate_face_target(operation.id, operation.parameters["target"], allow_named_face=True)
+        hole_type = str(operation.parameters["hole_type"]).strip().lower()
+        if hole_type not in {"simple", "clearance", "counterbore", "countersink", "threaded", "tapped"}:
+            raise ValidationError(f"{operation.id}.hole_type is not supported.")
+        if not str(operation.parameters["size"]).strip():
+            raise ValidationError(f"{operation.id}.size must not be empty.")
+        locations = operation.parameters["locations"]
+        if not isinstance(locations, list) or not locations:
+            raise ValidationError(f"{operation.id}.locations must be a non-empty list.")
+        for index, location in enumerate(locations):
+            if not isinstance(location, dict):
+                raise ValidationError(f"{operation.id}.locations[{index}] must be an object.")
+            _require_numeric_pair(location.get("center"), f"{operation.id}.locations[{index}].center")
+            if "id" in location and not str(location["id"]).strip():
+                raise ValidationError(f"{operation.id}.locations[{index}].id must not be empty.")
+        for field_name in [
+            "diameter",
+            "depth",
+            "thread_depth",
+            "drill_depth",
+            "tap_drill_diameter",
+            "counterbore_diameter",
+            "counterbore_depth",
+            "countersink_diameter",
+        ]:
+            if field_name in operation.parameters and operation.parameters[field_name] is not None:
+                _require_positive(float(operation.parameters[field_name]), f"{operation.id}.{field_name}")
+        if "countersink_angle" in operation.parameters and operation.parameters["countersink_angle"] is not None:
+            angle = float(operation.parameters["countersink_angle"])
+            if angle <= 0 or angle >= 180:
+                raise ValidationError(f"{operation.id}.countersink_angle must be greater than 0 and smaller than 180.")
+        end_condition = str(operation.parameters.get("end_condition", "blind")).strip().lower()
+        if end_condition not in {"blind", "through", "through_all"}:
+            raise ValidationError(f"{operation.id}.end_condition is not supported.")
     elif operation.type in {"revolve", "cut_revolve"}:
         axis = operation.parameters["axis"]
         if not isinstance(axis, dict) or str(axis.get("type", "")).lower() not in {

@@ -234,6 +234,23 @@ def _primitive_circle_instances(part: PrimitivePart) -> list[dict[str, object]]:
                 }
                 circles.append(circle)
                 circle_specs[str(circle["id"])] = circle
+        elif operation.type == "hole_wizard":
+            diameter = float(
+                operation.parameters.get("diameter")
+                or operation.parameters.get("tap_drill_diameter")
+                or operation.parameters.get("counterbore_diameter")
+                or 1.0
+            )
+            for index, location in enumerate(operation.parameters.get("locations", []), start=1):
+                center_x, center_y = [float(item) for item in location["center"]]
+                circles.append(
+                    {
+                        "id": str(location.get("id", f"{operation.id}_{index}")),
+                        "sketch": operation.id,
+                        "center": [center_x, center_y],
+                        "diameter": diameter,
+                    }
+                )
     return circles
 
 
@@ -626,6 +643,72 @@ def primitive_hole_count(part: PrimitivePart) -> int:
     )
 
 
+def primitive_engineering_hole_callouts(part: PrimitivePart) -> list[dict[str, object]]:
+    callouts: list[dict[str, object]] = []
+    for operation in part.operations:
+        parameters = operation.parameters
+        hole_metadata = parameters.get("hole_metadata")
+        thread_metadata = parameters.get("thread_metadata")
+        if hole_metadata is None and thread_metadata is None:
+            continue
+        holes = []
+        if isinstance(hole_metadata, dict):
+            holes = list(hole_metadata.get("holes", []))
+        if not holes and isinstance(thread_metadata, dict):
+            holes = list(thread_metadata.get("holes", []))
+        entry: dict[str, object] = {
+            "operation_id": operation.id,
+            "operation_type": operation.type,
+            "hole_kind": hole_metadata.get("kind") if isinstance(hole_metadata, dict) else ("threaded_hole" if thread_metadata else "hole"),
+            "hole_count": len(holes),
+            "locations": [hole.get("center") for hole in holes if isinstance(hole, dict) and "center" in hole],
+            "callout": hole_metadata.get("callout") if isinstance(hole_metadata, dict) else None,
+        }
+        if isinstance(hole_metadata, dict):
+            entry["nominal_size"] = hole_metadata.get("nominal_size")
+            entry["finished_diameter"] = hole_metadata.get("clearance_diameter") or (
+                holes[0].get("finished_diameter") if holes else None
+            )
+            entry["clearance_class"] = hole_metadata.get("clearance_class")
+        if isinstance(thread_metadata, dict):
+            entry["thread_callout"] = thread_metadata.get("callout")
+            entry["thread_size"] = thread_metadata.get("thread_size")
+            entry["thread_pitch"] = thread_metadata.get("thread_pitch")
+            entry["thread_depth"] = thread_metadata.get("thread_depth")
+            entry["thread_modeling"] = thread_metadata.get("thread_modeling")
+        callouts.append(entry)
+    return callouts
+
+
+def primitive_drawing_annotation_plan(part: PrimitivePart) -> dict[str, object]:
+    hole_callouts = primitive_engineering_hole_callouts(part)
+    annotations: list[dict[str, object]] = []
+    notes: list[str] = []
+    for entry in hole_callouts:
+        annotation = {
+            "source_operation_id": entry["operation_id"],
+            "annotation_type": "hole_callout",
+            "hole_kind": entry.get("hole_kind"),
+            "callout": entry.get("thread_callout") or entry.get("callout"),
+            "quantity": entry.get("hole_count", 0),
+            "locations": entry.get("locations", []),
+        }
+        if entry.get("finished_diameter") is not None:
+            annotation["finished_diameter"] = entry.get("finished_diameter")
+        if entry.get("thread_pitch") is not None:
+            annotation["thread_pitch"] = entry.get("thread_pitch")
+        annotations.append(annotation)
+        if entry.get("thread_modeling") == "tap_drill_geometry_with_thread_metadata":
+            notes.append(
+                f"{annotation['callout']}: geometry is tap-drill only; cosmetic thread/drawing thread symbol still requires follow-up."
+            )
+    return {
+        "hole_annotations": annotations,
+        "notes": notes,
+        "ready_for_lightweight_drawing": bool(annotations),
+    }
+
+
 def write_primitive_part_svg(job: CadJob, path: Path) -> None:
     part = job.part
     outline, circles = _primitive_outline(part)
@@ -661,6 +744,7 @@ def write_primitive_part_svg(job: CadJob, path: Path) -> None:
 
 def write_primitive_part_report_pdf(job: CadJob, path: Path, backend: str, generated_step: bool) -> None:
     part = job.part
+    drawing_plan = primitive_drawing_annotation_plan(part)
     lines = [
         "VibeCading CAD Agent - Primitive Part Report",
         f"Job ID: {job.job_id}",
@@ -671,6 +755,12 @@ def write_primitive_part_report_pdf(job: CadJob, path: Path, backend: str, gener
         f"Primitive operations: {len(part.operations)}",
         f"STEP generated: {'yes' if generated_step else 'no'}",
     ]
+    for annotation in drawing_plan["hole_annotations"]:
+        callout = annotation.get("callout") or "unspecified hole callout"
+        quantity = int(annotation.get("quantity", 0))
+        lines.append(f"Hole callout: {callout} x{quantity}")
+    for note in drawing_plan["notes"]:
+        lines.append(f"Note: {note}")
     for index, operation in enumerate(part.operations, start=1):
         lines.append(f"Operation {index}: {operation.id} / {operation.type}")
     write_simple_pdf(lines, path)
@@ -680,9 +770,11 @@ class PreviewAdapter:
     name = "preview"
 
     def run_mounting_plate(self, job: CadJob, output_dir: Path) -> BackendResult:
+        # Legacy compatibility wrapper. The preview execution mainline is primitive_part.
         return self.run_primitive_part(compile_to_primitive_job(job), output_dir)
 
     def run_feature_part(self, job: CadJob, output_dir: Path) -> BackendResult:
+        # Legacy compatibility wrapper. The preview execution mainline is primitive_part.
         return self.run_primitive_part(compile_to_primitive_job(job), output_dir)
 
     def run_primitive_part(self, job: CadJob, output_dir: Path) -> BackendResult:
@@ -720,9 +812,10 @@ class PreviewAdapter:
                 },
                 "source_kind": part.source_kind,
                 "operation_count": len(part.operations),
-                "operation_types": primitive_types,
                 "primitive_operation_types": primitive_types,
                 "hole_count": primitive_hole_count(part),
+                "engineering_hole_callouts": primitive_engineering_hole_callouts(part),
+                "drawing_annotation_plan": primitive_drawing_annotation_plan(part),
                 "completed_exports": [item for item in part.export_formats if item in {"json", "pdf", "svg"}],
                 "unsupported_exports": unsupported,
             }

@@ -3,6 +3,9 @@ from __future__ import annotations
 import math
 from typing import Any
 
+import pythoncom
+import win32com.client
+
 from adapters.base import BackendUnavailable
 from core.dsl import PrimitiveOperation, PrimitivePart
 
@@ -60,6 +63,37 @@ SKETCH_TRIM_OPTIONS = {
     "trim_away_outside": 5,
     "inside": 6,
     "trim_away_inside": 6,
+}
+SW_SELECT_TYPE_FACES = 2
+HOLE_WIZARD_GENERAL_TYPES = {
+    "counterbore": 0,
+    "countersink": 1,
+    "simple": 2,
+    "clearance": 2,
+    "threaded": 4,
+    "tapped": 4,
+}
+HOLE_WIZARD_STANDARDS = {
+    "ansi_inch": 0,
+    "ansi_metric": 1,
+    "din": 2,
+    "iso": 8,
+    "jis": 4,
+}
+HOLE_WIZARD_FASTENER_TYPES = {
+    "iso_clearance": 144,
+    "iso_screw_clearance": 144,
+    "iso_counterbore": 139,
+    "iso_socket_head_cap_screw": 139,
+    "iso_countersink": 140,
+    "iso_flat_head_screw": 140,
+    "iso_threaded": 147,
+    "iso_tapped_hole": 147,
+}
+HOLE_WIZARD_END_CONDITIONS = {
+    "blind": 0,
+    "through": 1,
+    "through_all": 1,
 }
 
 ORIGINAL_PLANE_ALIASES = {
@@ -179,6 +213,8 @@ class SolidWorksPrimitiveExecutor:
             return self._extrude(operation)
         if operation.type == "cut_extrude":
             return self._cut_extrude(operation)
+        if operation.type == "hole_wizard":
+            return self._hole_wizard(operation)
         if operation.type == "revolve":
             return self._revolve(operation, is_cut=False)
         if operation.type == "cut_revolve":
@@ -220,7 +256,7 @@ class SolidWorksPrimitiveExecutor:
         target = dict(operation.parameters["target"])
         face, face_report = self._find_planar_face(target)
         self.model.ClearSelection2(True)
-        if not self._select_entity(face):
+        if not self._select_face_by_report(face, face_report, append=False, mark=0):
             raise BackendUnavailable(f"SolidWorks failed to select target face for sketch: {operation.id}")
         self.sketch_manager.InsertSketch(True)
         active_sketch = _maybe_call(self.sketch_manager.ActiveSketch)
@@ -1535,6 +1571,10 @@ class SolidWorksPrimitiveExecutor:
     def _extrude(self, operation: PrimitiveOperation) -> dict[str, object]:
         self._require_active_sketch(str(operation.parameters["sketch"]))
         depth = self._mm_to_m(operation.parameters["depth"])
+        draft_angle = operation.parameters.get("draft_angle")
+        use_draft = draft_angle is not None
+        draft_angle_rad = math.radians(float(draft_angle)) if use_draft else 0
+        draft_outward = bool(operation.parameters.get("draft_outward", False))
         self.sketch_manager.InsertSketch(True)
         feature = self.feature_manager.FeatureExtrusion2(
             True,
@@ -1544,11 +1584,11 @@ class SolidWorksPrimitiveExecutor:
             0,
             depth,
             0,
+            use_draft,
             False,
+            draft_outward,
             False,
-            False,
-            False,
-            0,
+            draft_angle_rad,
             0,
             False,
             False,
@@ -1565,13 +1605,18 @@ class SolidWorksPrimitiveExecutor:
             raise BackendUnavailable(f"SolidWorks failed to create extrusion: {operation.id}")
         feature_name = self._register_feature(operation.id, feature)
         self.active_sketch_id = None
-        return {
+        result: dict[str, object] = {
             "operation_id": operation.id,
             "operation_type": operation.type,
             "depth": float(operation.parameters["depth"]),
             "feature_id": operation.id,
             "feature_name": feature_name,
+            "draft_angle": float(draft_angle) if use_draft else None,
+            "draft_outward": draft_outward if use_draft else None,
         }
+        if "feature_metadata" in operation.parameters:
+            result["feature_metadata"] = dict(operation.parameters["feature_metadata"])
+        return result
 
     def _cut_extrude(self, operation: PrimitiveOperation) -> dict[str, object]:
         self._require_active_sketch(str(operation.parameters["sketch"]))
@@ -1628,7 +1673,259 @@ class SolidWorksPrimitiveExecutor:
         }
         if "thread_metadata" in operation.parameters:
             result["thread_metadata"] = dict(operation.parameters["thread_metadata"])
+        if "hole_metadata" in operation.parameters:
+            result["hole_metadata"] = dict(operation.parameters["hole_metadata"])
+        if "feature_metadata" in operation.parameters:
+            result["feature_metadata"] = dict(operation.parameters["feature_metadata"])
         return result
+
+    def _hole_wizard(self, operation: PrimitiveOperation) -> dict[str, object]:
+        if self.active_sketch_id is not None:
+            self.sketch_manager.InsertSketch(True)
+            self.active_sketch_id = None
+
+        parameters = operation.parameters
+        locations = list(parameters["locations"])
+        target = dict(parameters["target"])
+        hole_type = str(parameters["hole_type"]).strip().lower()
+        standard_key = str(parameters.get("standard", "iso")).strip().lower()
+        size = str(parameters["size"]).strip()
+        end_condition_key = str(parameters.get("end_condition", "blind")).strip().lower()
+
+        face, face_report = self._find_planar_face(target)
+        general_type = self._enum_value(hole_type, HOLE_WIZARD_GENERAL_TYPES)
+        standard = self._enum_value(parameters.get("standard_id", standard_key), HOLE_WIZARD_STANDARDS)
+        fastener_type = self._hole_wizard_fastener_type(parameters, standard_key, hole_type)
+        end_condition = self._enum_value(end_condition_key, HOLE_WIZARD_END_CONDITIONS)
+        diameter = self._mm_to_m(parameters.get("diameter", parameters.get("tap_drill_diameter", 0)))
+        depth = self._mm_to_m(parameters.get("drill_depth", parameters.get("depth", 0)))
+        length = self._mm_to_m(parameters.get("thread_depth", parameters.get("depth", 0)))
+        thread_class = str(parameters.get("thread_class", "6H"))
+        reverse_direction = bool(parameters.get("reverse_direction", False))
+        use_feature_scope = bool(parameters.get("feature_scope", False))
+        auto_select = bool(parameters.get("auto_select", True))
+        assembly_feature_scope = bool(parameters.get("assembly_feature_scope", False))
+        auto_select_components = bool(parameters.get("auto_select_components", True))
+        propagate_to_parts = bool(parameters.get("propagate_to_parts", False))
+
+        feature_reports: list[dict[str, object]] = []
+        for index, location in enumerate(locations, start=1):
+            feature = None
+            call_errors: list[str] = []
+            value_sets = self._hole_wizard_value_sets(parameters, hole_type)
+            for values in value_sets:
+                self.model.ClearSelection2(True)
+                selected_locations = self._select_hole_wizard_locations(face, face_report, [location])
+                if selected_locations != 1:
+                    self.model.ClearSelection2(True)
+                    raise BackendUnavailable(
+                        f"SolidWorks failed to select Hole Wizard locations: {operation.id}"
+                    )
+                try:
+                    feature = self.feature_manager.HoleWizard5(
+                        general_type,
+                        standard,
+                        fastener_type,
+                        size,
+                        end_condition,
+                        diameter,
+                        depth,
+                        length,
+                        *values,
+                        thread_class,
+                        reverse_direction,
+                        use_feature_scope,
+                        auto_select,
+                        assembly_feature_scope,
+                        auto_select_components,
+                        propagate_to_parts,
+                    )
+                except Exception as exc:
+                    call_errors.append(str(exc))
+                    feature = None
+                if feature is not None:
+                    break
+
+            self.model.ClearSelection2(True)
+            if feature is None:
+                suffix = f" ({'; '.join(call_errors)})" if call_errors else ""
+                raise BackendUnavailable(f"SolidWorks failed to create Hole Wizard feature: {operation.id}{suffix}")
+            feature_key = operation.id if len(locations) == 1 and index == 1 else f"{operation.id}_{index}"
+            feature_name = self._register_feature(feature_key, feature)
+            feature_reports.append(
+                {
+                    "location": location,
+                    "feature_id": feature_key,
+                    "feature_name": feature_name,
+                }
+            )
+
+        result: dict[str, object] = {
+            "operation_id": operation.id,
+            "operation_type": operation.type,
+            "feature_id": feature_reports[0]["feature_id"],
+            "feature_name": feature_reports[0]["feature_name"],
+            "hole_type": hole_type,
+            "standard": standard_key,
+            "standard_id": standard,
+            "fastener_type": fastener_type,
+            "size": size,
+            "end_condition": end_condition_key,
+            "locations": locations,
+            "native_hole_wizard": True,
+        }
+        if len(feature_reports) > 1:
+            result["feature_count"] = len(feature_reports)
+            result["created_features"] = feature_reports
+        if "hole_metadata" in parameters:
+            result["hole_metadata"] = dict(parameters["hole_metadata"])
+        if "thread_metadata" in parameters:
+            result["thread_metadata"] = dict(parameters["thread_metadata"])
+        return result
+
+    def _hole_wizard_fastener_type(self, parameters: dict[str, Any], standard_key: str, hole_type: str) -> int:
+        if "fastener_type_id" in parameters:
+            return int(parameters["fastener_type_id"])
+        fastener_type = parameters.get("fastener_type")
+        if fastener_type is not None:
+            return self._enum_value(fastener_type, HOLE_WIZARD_FASTENER_TYPES)
+        if standard_key != "iso":
+            raise BackendUnavailable(
+                "Hole Wizard fastener_type_id is required for non-ISO standards in the first executor version."
+            )
+        if hole_type in {"threaded", "tapped"}:
+            alias = "iso_threaded"
+        elif hole_type == "counterbore":
+            alias = "iso_counterbore"
+        elif hole_type == "countersink":
+            alias = "iso_countersink"
+        else:
+            alias = "iso_clearance"
+        return HOLE_WIZARD_FASTENER_TYPES[alias]
+
+    def _hole_wizard_value_sets(self, parameters: dict[str, Any], hole_type: str) -> list[list[float]]:
+        values = [0.0] * 12
+        if hole_type == "counterbore":
+            values[0] = self._mm_to_m(parameters.get("counterbore_diameter", parameters.get("diameter", 0)))
+            values[1] = self._mm_to_m(parameters.get("counterbore_depth", 0))
+        elif hole_type == "countersink":
+            values[0] = self._mm_to_m(parameters.get("countersink_diameter", parameters.get("diameter", 0)))
+            values[1] = math.radians(float(parameters.get("countersink_angle", 90)))
+        elif hole_type in {"threaded", "tapped"}:
+            values[0] = self._mm_to_m(parameters.get("thread_depth", parameters.get("depth", 0)))
+        if any(abs(value) > 1e-12 for value in values):
+            return [values, [0.0] * 12]
+        return [values]
+
+    def _select_hole_wizard_locations(
+        self,
+        face,
+        face_report: dict[str, object],
+        locations: list[dict[str, object]],
+    ) -> int:
+        normal = face_report.get("normal", [0.0, 0.0, 1.0])
+        center = face_report.get("center", [0.0, 0.0, 0.0])
+        if not isinstance(normal, list | tuple) or len(normal) < 3:
+            normal = [0.0, 0.0, 1.0]
+        if not isinstance(center, list | tuple) or len(center) < 3:
+            center = [0.0, 0.0, 0.0]
+        normal_m = self._normalize_vector(normal)
+        face_z = float(center[2])
+        selected = 0
+        extension = self.model.Extension
+        for location in locations:
+            location_center = location["center"]
+            x = self._mm_to_m(location_center[0])
+            y = self._mm_to_m(location_center[1])
+            z = self._mm_to_m(face_z)
+            start_x = x + normal_m[0] * self._mm_to_m(5)
+            start_y = y + normal_m[1] * self._mm_to_m(5)
+            start_z = z + normal_m[2] * self._mm_to_m(5)
+            ray = (-normal_m[0], -normal_m[1], -normal_m[2])
+            append = selected > 0
+            selected_here = False
+            try:
+                selected_here = bool(
+                    extension.SelectByRay(
+                        start_x,
+                        start_y,
+                        start_z,
+                        ray[0],
+                        ray[1],
+                        ray[2],
+                        self._mm_to_m(1),
+                        SW_SELECT_TYPE_FACES,
+                        append,
+                        0,
+                        self._null_dispatch(),
+                        0,
+                    )
+                )
+            except Exception:
+                selected_here = False
+            if not selected_here:
+                try:
+                    selected_here = bool(
+                        extension.SelectByID2(
+                            "",
+                            "FACE",
+                            x,
+                            y,
+                            z,
+                            append,
+                            0,
+                            self._null_dispatch(),
+                            0,
+                        )
+                    )
+                except Exception:
+                    selected_here = False
+            if not selected_here and selected == 0:
+                selected_here = self._select_face_by_report(face, face_report, append=False, mark=0)
+            if selected_here:
+                selected += 1
+        if selected == len(locations):
+            return selected
+        self.model.ClearSelection2(True)
+        return self._select_hole_wizard_sketch_points(face, face_report, locations)
+
+    def _select_hole_wizard_sketch_points(
+        self,
+        face,
+        face_report: dict[str, object],
+        locations: list[dict[str, object]],
+    ) -> int:
+        self.model.ClearSelection2(True)
+        if not self._select_face_by_report(face, face_report, append=False, mark=0):
+            return 0
+        try:
+            # Keep the Hole Wizard positions sketch minimal.
+            # SolidWorks' native Hole Wizard path is sensitive to extra constraints or
+            # auto-dimensioning on this transient sketch; over-defining it can destabilize
+            # the feature build or even crash the SolidWorks process.
+            self.sketch_manager.InsertSketch(True)
+            points = []
+            for index, location in enumerate(locations, start=1):
+                x, y = location["center"]
+                point = self.sketch_manager.CreatePoint(self._mm_to_m(x), self._mm_to_m(y), 0)
+                if point is None:
+                    return 0
+                self._try_rename_entity(point, f"孔向导位置点{index}")
+                points.append(point)
+        finally:
+            try:
+                self.sketch_manager.InsertSketch(True)
+            except Exception:
+                pass
+
+        self.model.ClearSelection2(True)
+        if not self._select_face_by_report(face, face_report, append=False, mark=0):
+            return 0
+        selected = 0
+        for point in points:
+            if self._select_entity(point, append=True, mark=0):
+                selected += 1
+        return selected
 
     def _revolve(self, operation: PrimitiveOperation, *, is_cut: bool) -> dict[str, object]:
         sketch_id = str(operation.parameters["sketch"])
@@ -2112,7 +2409,7 @@ class SolidWorksPrimitiveExecutor:
         try:
             extension = self.model.Extension
             for candidate in wanted:
-                if extension.SelectByID2(candidate, "PLANE", 0, 0, 0, False, 0, None, 0):
+                if extension.SelectByID2(candidate, "PLANE", 0, 0, 0, False, 0, self._null_dispatch(), 0):
                     return candidate
         except Exception:
             pass
@@ -2125,7 +2422,7 @@ class SolidWorksPrimitiveExecutor:
             return True
         try:
             extension = self.model.Extension
-            return bool(extension.SelectByID2(sketch_id, "SKETCH", 0, 0, 0, append, mark, None, 0))
+            return bool(extension.SelectByID2(sketch_id, "SKETCH", 0, 0, 0, append, mark, self._null_dispatch(), 0))
         except Exception:
             return False
 
@@ -2698,7 +2995,7 @@ class SolidWorksPrimitiveExecutor:
         extension = self.model.Extension
         for name in ["", *self._entity_names(entity)]:
             try:
-                if extension.SelectByID2(name, "SKETCHSEGMENT", x, y, z, append, mark, None, 0):
+                if extension.SelectByID2(name, "SKETCHSEGMENT", x, y, z, append, mark, self._null_dispatch(), 0):
                     return True
             except Exception:
                 continue
@@ -2848,7 +3145,7 @@ class SolidWorksPrimitiveExecutor:
             y = (float(start_point[1]) + float(end_point[1])) / 2
             z = (float(start_point[2]) + float(end_point[2])) / 2
             extension = self.model.Extension
-            return bool(extension.SelectByID2("", "EDGE", x, y, z, append, mark, None, 0))
+            return bool(extension.SelectByID2("", "EDGE", x, y, z, append, mark, self._null_dispatch(), 0))
         except Exception:
             return False
 
@@ -2865,7 +3162,7 @@ class SolidWorksPrimitiveExecutor:
                     self._mm_to_m(center[2]),
                     append,
                     mark,
-                    None,
+                    self._null_dispatch(),
                     0,
                 ):
                     return True
@@ -2940,3 +3237,7 @@ class SolidWorksPrimitiveExecutor:
             except Exception:
                 continue
         return False
+
+    @staticmethod
+    def _null_dispatch():
+        return win32com.client.VARIANT(pythoncom.VT_DISPATCH, None)

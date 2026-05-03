@@ -5,6 +5,10 @@ from typing import Any
 from core.dsl import CadJob, FeaturePart, MountingPlate, PrimitiveOperation, PrimitivePart
 
 
+LEGACY_COMPAT_JOB_KINDS = {"mounting_plate", "feature_part"}
+LEGACY_COMPAT_FEATURE_OPERATIONS = {"l_profile_extrude"}
+
+
 def _operation(
     operation_id: str,
     operation_type: str,
@@ -81,6 +85,8 @@ def _vertical_dimension(
 
 
 def _mounting_plate_to_primitives(part: MountingPlate) -> list[PrimitiveOperation]:
+    # Legacy compatibility path: mounting_plate remains a supported regression example,
+    # but execution should flow through primitive_part operations.
     sketch_id = "plate_sketch"
     profile_id = "plate_outline"
     center_ref_id = "plate_center_ref"
@@ -180,6 +186,8 @@ def _mounting_plate_to_primitives(part: MountingPlate) -> list[PrimitiveOperatio
 
 
 def _l_profile_to_primitives(operation_id: str, params: dict[str, Any]) -> list[PrimitiveOperation]:
+    # Legacy compatibility path: l_profile_extrude stays as a narrow regression example,
+    # not as a product expansion direction.
     sketch_id = f"{operation_id}_sketch"
     profile_id = operation_id
     base_length = float(params["base_length"])
@@ -229,6 +237,7 @@ def _feature_part_to_primitives(part: FeaturePart) -> list[PrimitiveOperation]:
 
 
 def compile_to_primitive_job(job: CadJob) -> CadJob:
+    """Compile legacy compatibility jobs into the primitive_part execution mainline."""
     if job.kind == "primitive_part":
         return job
     if isinstance(job.part, MountingPlate):
